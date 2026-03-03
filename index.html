@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeaveLedger</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#d9531c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LeaveLedger">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg:#f5f2ee;--bg2:#ede9e3;--surf:#fff;--surf2:#faf8f5;
+--bdr:#e4dfd7;--bdr2:#ccc5bc;
+--t1:#1a1510;--t2:#5a4f44;--t3:#9c8878;
+--acc:#d9531c;--acc2:#b8420f;--acc-bg:#fff4ee;--acc-bdr:#fbd6bb;
+--amb:#c47a0a;--amb-bg:#fffbeb;--amb-bdr:#fde68a;
+--grn:#16a34a;--grn-bg:#f0fdf4;--grn-bdr:#bbf7d0;
+--red:#dc2626;--red-bg:#fef2f2;--red-bdr:#fecaca;
+--blu:#2563eb;--blu-bg:#eff6ff;--blu-bdr:#bfdbfe;
+--pur:#7c3aed;--pur-bg:#f5f3ff;--pur-bdr:#ddd6fe;
+--sh1:0 1px 3px rgba(0,0,0,.07);
+--sh2:0 2px 10px rgba(0,0,0,.09);
+--sh3:0 4px 20px rgba(0,0,0,.11);
+--sh4:0 8px 32px rgba(0,0,0,.13);
+--r:10px;--rsm:6px;--rlg:14px;--rxl:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--t1);background:var(--bg);-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4,h5,h6,.font-display{font-family:'Outfit',sans-serif;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:99px;}
+a{text-decoration:none;}
+button{cursor:pointer;border:none;background:none;font-family:inherit;}
+
+.view{display:none;min-height:100vh;}
+.view.active{display:block;}
+#loading-view{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);}
+#login-view{display:none;min-height:100vh;}
+#login-view.active{display:flex;}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+@keyframes progAnim{0%{width:4%;}40%{width:52%;}80%{width:82%;}100%{width:96%;};}
+@keyframes sparkGo{to{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+.loader-ring{width:40px;height:40px;border:3px solid var(--bdr);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;}
+.ll-brand-icon{width:32px;height:32px;background:linear-gradient(135deg,#f97030,#d9531c);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ll-brand-name{font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--t1);}
+
+.topbar{position:sticky;top:0;z-index:100;height:56px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 24px;gap:16px;}
+.topbar-left{display:flex;align-items:center;gap:10px;flex:1;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-school{font-size:12px;font-weight:600;color:var(--t2);background:var(--bg2);padding:3px 10px;border-radius:99px;border:1px solid var(--bdr);}
+.topbar-greeting{font-size:13px;color:var(--t2);}
+.topbar-role{font-size:11px;font-weight:600;color:var(--acc);background:var(--acc-bg);padding:2px 8px;border-radius:99px;border:1px solid var(--acc-bdr);}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;border-radius:var(--r);transition:all .15s;cursor:pointer;border:1px solid transparent;line-height:1.4;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+.btn-primary{background:linear-gradient(160deg,#f0651a,#d9531c,#b8420f);color:#fff;border-color:#b8420f;box-shadow:0 2px 0 #8c3009,var(--sh1);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 3px 0 #8c3009,var(--sh2);}
+.btn-primary:active{transform:translateY(1px);box-shadow:0 1px 0 #8c3009;}
+.btn-secondary{background:#fff;color:var(--t1);border-color:var(--bdr2);box-shadow:0 1px 0 var(--bdr2),var(--sh1);}
+.btn-secondary:hover{background:var(--surf2);transform:translateY(-1px);box-shadow:0 2px 0 var(--bdr2),var(--sh1);}
+.btn-secondary:active{transform:translateY(1px);box-shadow:none;}
+.btn-success{background:linear-gradient(160deg,#22c55e,#16a34a,#15803d);color:#fff;border-color:#15803d;box-shadow:0 2px 0 #14532d,var(--sh1);}
+.btn-success:hover{transform:translateY(-1px);}
+.btn-success:active{transform:translateY(1px);}
+.btn-danger{background:linear-gradient(160deg,#f87171,#dc2626,#b91c1c);color:#fff;border-color:#b91c1c;box-shadow:0 2px 0 #7f1d1d,var(--sh1);}
+.btn-danger:hover{transform:translateY(-1px);}
+.btn-danger:active{transform:translateY(1px);}
+.btn-amber{background:linear-gradient(160deg,#fbbf24,#d97706,#b45309);color:#fff;border-color:#b45309;box-shadow:0 2px 0 #78350f,var(--sh1);}
+.btn-amber:hover{transform:translateY(-1px);}
+.btn-amber:active{transform:translateY(1px);}
+.btn-purple{background:linear-gradient(160deg,#a78bfa,#7c3aed,#6d28d9);color:#fff;border-color:#6d28d9;box-shadow:0 2px 0 #4c1d95,var(--sh1);}
+.btn-purple:hover{transform:translateY(-1px);}
+.btn-purple:active{transform:translateY(1px);}
+
+.ib{width:30px;height:30px;border-radius:var(--rsm);display:inline-flex;align-items:center;justify-content:center;border:1.5px solid transparent;transition:all .15s;flex-shrink:0;}
+.ib:hover{transform:translateY(-1px);}
+.ib:active{transform:translateY(1px);}
+.ib-edit{background:linear-gradient(135deg,#fef9c3,#fde047);border-color:#f59e0b;color:#92400e;box-shadow:0 2px 0 #92400e44;}
+.ib-add{background:linear-gradient(135deg,#dcfce7,#86efac);border-color:#22c55e;color:#15803d;box-shadow:0 2px 0 #15803d44;}
+.ib-deduct{background:linear-gradient(135deg,#fee2e2,#fca5a5);border-color:#f87171;color:#b91c1c;box-shadow:0 2px 0 #b91c1c44;}
+.ib-transfer{background:linear-gradient(135deg,#dbeafe,#93c5fd);border-color:#60a5fa;color:#1d4ed8;box-shadow:0 2px 0 #1d4ed844;}
+.ib-del{background:linear-gradient(135deg,#fee2e2,#fca5a5);border-color:#f87171;color:#b91c1c;box-shadow:0 2px 0 #b91c1c44;}
+.ib-promo{background:linear-gradient(135deg,#ede9fe,#c4b5fd);border-color:#a78bfa;color:#5b21b6;box-shadow:0 2px 0 #4c1d9544;}
+.ib-msg{background:linear-gradient(135deg,#dcfce7,#86efac);border-color:#22c55e;color:#15803d;box-shadow:0 2px 0 #15803d44;}
+.ib-step{background:linear-gradient(135deg,#e0f2fe,#7dd3fc);border-color:#38bdf8;color:#0369a1;box-shadow:0 2px 0 #0369a144;}
+.ib-view{background:linear-gradient(135deg,#f3f4f6,#e5e7eb);border-color:#d1d5db;color:#374151;box-shadow:0 2px 0 #37415144;}
+
+.input{width:100%;padding:9px 12px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;border:1.5px solid var(--bdr);border-radius:var(--rsm);background:var(--bg2);color:var(--t1);transition:all .15s;outline:none;}
+.input:focus{border-color:var(--acc);background:#fff;box-shadow:0 0 0 3px rgba(217,83,28,.1);}
+.input:disabled{opacity:.5;cursor:not-allowed;}
+.input::placeholder{color:var(--t3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:80px;}
+
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);padding:20px;box-shadow:var(--sh1);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{display:flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:700;font-size:13.5px;color:var(--t1);}
+.card-icon{width:26px;height:26px;border-radius:6px;background:var(--acc-bg);border:1px solid var(--acc-bdr);display:flex;align-items:center;justify-content:center;color:var(--acc);flex-shrink:0;}
+
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid transparent;}
+.bdg-org{background:var(--acc-bg);color:var(--acc);border-color:var(--acc-bdr);}
+.bdg-grn{background:var(--grn-bg);color:var(--grn);border-color:var(--grn-bdr);}
+.bdg-red{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr);}
+.bdg-amb{background:var(--amb-bg);color:var(--amb);border-color:var(--amb-bdr);}
+.bdg-blu{background:var(--blu-bg);color:var(--blu);border-color:var(--blu-bdr);}
+.bdg-pur{background:var(--pur-bg);color:var(--pur);border-color:var(--pur-bdr);}
+
+.stat-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh1);}
+.stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stat-icon-org{background:var(--acc-bg);color:var(--acc);}
+.stat-icon-grn{background:var(--grn-bg);color:var(--grn);}
+.stat-icon-amb{background:var(--amb-bg);color:var(--amb);}
+.stat-icon-blu{background:var(--blu-bg);color:var(--blu);}
+.stat-val{font-family:'Outfit',sans-serif;font-weight:800;font-size:26px;color:var(--t1);line-height:1;}
+.stat-label{font-size:12px;color:var(--t3);margin-top:3px;}
+
+.teacher-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);margin-bottom:8px;transition:all .18s;background:var(--surf);animation:slideUp .3s ease both;}
+.teacher-row:hover{border-color:var(--acc-bdr);background:#fffcfa;transform:translateX(2px);box-shadow:var(--sh2);}
+.teacher-info{flex:1;min-width:0;cursor:pointer;}
+.teacher-name{font-family:'Outfit',sans-serif;font-weight:700;font-size:13.5px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.teacher-email{font-size:11.5px;color:var(--t3);margin-top:1px;}
+.teacher-desig{font-size:11px;color:var(--t2);margin-top:2px;}
+.teacher-credits{font-family:'Outfit',sans-serif;font-weight:800;font-size:22px;color:var(--acc);min-width:40px;text-align:center;}
+.teacher-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.divider-v{width:1px;height:28px;background:var(--bdr);margin:0 4px;}
+
+.toggle-wrap{display:inline-flex;cursor:pointer;}
+.toggle-wrap input{display:none;}
+.toggle-track{width:36px;height:20px;background:var(--bdr2);border-radius:99px;position:relative;transition:all .2s;display:block;}
+.toggle-track::after{content:'';position:absolute;top:4px;left:4px;width:12px;height:12px;border-radius:50%;background:#fff;transition:all .2s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle-wrap input:checked~.toggle-track{background:var(--acc);border-color:var(--acc);}
+.toggle-wrap input:checked~.toggle-track::after{transform:translateX(16px);}
+
+.hist-entry{padding:14px;border:1.5px solid var(--bdr);border-radius:var(--r);margin-bottom:8px;background:var(--surf2);transition:all .15s;}
+.hist-entry:hover{background:var(--surf);border-color:var(--bdr2);}
+.hist-pos{font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--grn);}
+.hist-neg{font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--red);}
+.hist-promo{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--pur);}
+.hist-step{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--blu);}
+
+.step-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blu-bg);color:var(--blu);border:1px solid var(--blu-bdr);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;}
+.step-badge.maxed{background:var(--pur-bg);color:var(--pur);border-color:var(--pur-bdr);}
+
+.step-dots{display:flex;gap:3px;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr2);transition:all .2s;}
+.step-dot.filled{background:var(--blu);}
+.step-dot.filled.maxed{background:var(--pur);}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(26,21,16,.4);z-index:200;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;animation:fadeIn .18s ease;}
+.modal-box{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rxl);padding:26px;width:100%;max-width:440px;box-shadow:var(--sh4);animation:popIn .26s cubic-bezier(.22,1,.36,1);}
+.modal-box.md{max-width:540px;}
+.modal-box.lg{max-width:700px;}
+.modal-box.chat{max-width:580px;}
+.modal-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:17px;color:var(--t1);margin-bottom:16px;}
+.modal-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:var(--rsm);background:var(--bg2);color:var(--t2);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.modal-close:hover{background:var(--bdr);color:var(--t1);}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;margin-top:16px;border-top:1px solid var(--bdr);}
+.modal-body{position:relative;}
+
+.form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.form-label{font-size:12px;font-weight:600;color:var(--t2);}
+.form-hint{font-size:11px;color:var(--t3);margin-top:3px;}
+.form-error{font-size:12px;color:var(--red);background:var(--red-bg);padding:8px 10px;border-radius:var(--rsm);border:1px solid var(--red-bdr);}
+
+.login-view{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse at 80% 50%, rgba(217,83,28,.07) 0%, transparent 60%),radial-gradient(ellipse at 15% 80%, rgba(196,122,10,.05) 0%, transparent 50%);padding:20px;}
+.login-card{width:100%;max-width:880px;display:grid;grid-template-columns:1fr 1fr;border-radius:var(--rxl);overflow:hidden;box-shadow:var(--sh4);border:1px solid var(--bdr);animation:popIn .55s cubic-bezier(.22,1,.36,1);}
+.login-left{background:var(--surf);padding:44px 40px;}
+.login-right{background:linear-gradient(160deg,#fff9f5,#fffcf5,#fefce8);padding:44px 40px;border-left:1px solid var(--bdr);}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.login-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:26px;color:var(--t1);margin-bottom:6px;}
+.login-subtitle{font-size:13px;color:var(--t3);margin-bottom:28px;line-height:1.6;}
+.login-input-wrap{position:relative;margin-bottom:14px;}
+.login-input{width:100%;padding:11px 14px 11px 42px;font-size:13.5px;font-family:'Plus Jakarta Sans',sans-serif;border:1.5px solid var(--bdr);border-radius:var(--r);background:var(--bg2);color:var(--t1);outline:none;transition:all .15s;}
+.login-input:focus{border-color:var(--acc);background:#fff;box-shadow:0 0 0 3px rgba(217,83,28,.1);}
+.login-input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--t3);transition:color .15s;background:none;border:none;cursor:pointer;padding:2px;}
+.pw-toggle:hover{color:var(--t1);}
+.guide-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:22px;color:var(--t1);margin-bottom:6px;}
+.guide-sub{font-size:12px;color:var(--t3);margin-bottom:24px;line-height:1.5;}
+.guide-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;animation:slideUp .4s ease both;}
+.guide-item-icon{width:32px;height:32px;border-radius:8px;background:var(--acc-bg);border:1px solid var(--acc-bdr);display:flex;align-items:center;justify-content:center;color:var(--acc);flex-shrink:0;}
+.guide-item-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:2px;}
+.guide-item-desc{font-size:12px;color:var(--t3);line-height:1.5;}
+
+#system-admin-view,#standard-admin-view,#teacher-view{display:none;min-height:100vh;background:var(--bg);}
+#system-admin-view.active,#standard-admin-view.active,#teacher-view.active{display:block;}
+
+.sa-layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 56px);}
+.sa-sidebar{background:var(--surf);border-right:1px solid var(--bdr);padding:20px;overflow-y:auto;}
+.sa-main{padding:24px;overflow-y:auto;}
+
+.ao-layout{max-width:1200px;margin:0 auto;padding:24px;}
+.ao-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.ao-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;}
+.ao-main{display:flex;flex-direction:column;gap:20px;}
+.ao-side{display:flex;flex-direction:column;gap:20px;}
+
+.teacher-layout{max-width:960px;margin:0 auto;padding:24px;}
+.teacher-grid{display:grid;grid-template-columns:280px 1fr;gap:20px;}
+.teacher-profile-card{position:sticky;top:80px;}
+.credits-hero{text-align:center;padding:24px 0 16px;}
+.credits-num{font-family:'Outfit',sans-serif;font-weight:800;font-size:52px;color:var(--acc);line-height:1;}
+.credits-label{font-size:13px;color:var(--t3);margin-top:4px;}
+
+.search-wrap{position:relative;margin-bottom:16px;}
+.search-wrap input{padding-left:36px;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;}
+
+.transfer-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--bdr);border-radius:var(--rsm);margin-bottom:8px;background:var(--surf2);}
+
+.stepper-bar{display:flex;gap:0;margin-bottom:20px;}
+.stepper-seg{flex:1;height:3px;background:var(--bdr);border-radius:99px;margin:0 2px;transition:background .3s;}
+.stepper-seg.done{background:var(--amb);}
+.stepper-seg.active{background:linear-gradient(90deg,var(--acc),#f97030);}
+.stepper-labels{display:flex;justify-content:space-between;margin-bottom:14px;}
+.stepper-label{font-size:11.5px;font-weight:600;color:var(--t3);transition:color .3s;}
+.stepper-label.active{color:var(--acc);}
+.step-pane{display:none;}
+.step-pane.active{display:block;animation:slideUp .28s ease;}
+
+.conv-thread{height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--bdr);margin-bottom:12px;}
+.conv-msg{display:flex;flex-direction:column;}
+.conv-bubble{max-width:75%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;word-break:break-word;}
+.conv-bubble.mine{background:linear-gradient(135deg,#f97030,var(--acc));color:#fff;align-self:flex-end;border-radius:14px 14px 4px 14px;}
+.conv-bubble.theirs{background:var(--surf);color:var(--t1);align-self:flex-start;border:1px solid var(--bdr);border-radius:14px 14px 14px 4px;}
+.conv-meta{font-size:10.5px;color:var(--t3);margin-top:3px;}
+.conv-meta.mine{text-align:right;}
+.conv-input-row{display:flex;gap:8px;}
+
+.msg-dot{width:9px;height:9px;border-radius:50%;background:var(--red);animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;}
+
+.report-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rsm);cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;transition:all .15s;}
+.report-row:hover{background:var(--acc-bg);color:var(--acc);}
+.report-row.danger:hover{background:var(--red-bg);color:var(--red);}
+.report-row+.report-row{border-top:1px solid var(--bdr);}
+
+.pdf-overlay{display:none;position:fixed;inset:0;background:rgba(26,21,16,.5);z-index:999;backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+.pdf-overlay.on{display:flex;}
+.pdf-card{background:var(--surf);border-radius:var(--rxl);padding:36px 48px;text-align:center;border:1px solid var(--bdr);box-shadow:var(--sh4);min-width:260px;}
+.pdf-spinner{width:42px;height:42px;border:3px solid var(--bdr);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+.pdf-label{font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;color:var(--t1);margin-bottom:6px;}
+.pdf-sub{font-size:12px;color:var(--t3);margin-bottom:16px;}
+.pdf-bar-wrap{width:180px;height:4px;background:var(--bdr);border-radius:99px;overflow:hidden;margin:0 auto;}
+.pdf-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--amb));border-radius:99px;animation:progAnim 3s ease-in-out forwards;width:4%;}
+
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:900;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;min-width:260px;max-width:340px;box-shadow:var(--sh3);animation:toastIn .3s ease;pointer-events:auto;position:relative;overflow:hidden;}
+.toast-dot{width:28px;height:28px;border-radius:var(--rsm);background:var(--acc-bg);border:1px solid var(--acc-bdr);display:flex;align-items:center;justify-content:center;color:var(--acc);flex-shrink:0;}
+.toast-msg{font-size:13px;color:var(--t1);line-height:1.4;flex:1;}
+.toast-bar{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--acc),var(--amb));animation:progAnim 8s linear forwards;}
+
+.feedback-btn{position:fixed;bottom:24px;left:24px;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;box-shadow:0 3px 0 #78350f,var(--sh2);display:flex;align-items:center;justify-content:center;z-index:300;transition:all .15s;cursor:pointer;}
+.feedback-btn:hover{transform:translateY(-2px);box-shadow:0 4px 0 #78350f,var(--sh3);}
+.feedback-btn:active{transform:translateY(1px);box-shadow:0 1px 0 #78350f;}
+.hidden{display:none!important;}
+
+.announce-card{background:var(--amb-bg);border:1px solid var(--amb-bdr);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.announce-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--amb);margin-bottom:4px;}
+.announce-body{font-size:12.5px;color:var(--t2);line-height:1.5;}
+.announce-meta{font-size:11px;color:var(--t3);margin-top:6px;}
+
+.leave-req-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);margin-bottom:8px;background:var(--surf);transition:all .15s;}
+.leave-req-row:hover{border-color:var(--acc-bdr);background:#fffcfa;}
+
+.pos-hist-entry{padding:12px;border:1px solid var(--pur-bdr);border-radius:var(--r);background:var(--pur-bg);margin-bottom:8px;}
+.pos-hist-title{font-size:13px;font-weight:600;color:var(--pur);margin-bottom:4px;}
+.pos-hist-sub{font-size:12px;color:var(--t2);}
+
+.tab-row{display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:20px;}
+.tab-btn{padding:8px 16px;font-size:13px;font-weight:600;color:var(--t3);border:none;background:none;cursor:pointer;transition:all .15s;position:relative;font-family:'Plus Jakarta Sans',sans-serif;}
+.tab-btn:after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--acc);transform:scaleX(0);transition:transform .2s;}
+.tab-btn.active{color:var(--acc);}
+.tab-btn.active:after{transform:scaleX(1);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+.feedback-item{padding:12px;border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:8px;background:var(--surf2);}
+.school-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--bdr);border-radius:var(--rsm);margin-bottom:6px;background:var(--surf2);}
+.admin-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:var(--r);margin-bottom:8px;background:var(--surf);transition:all .15s;}
+.admin-row:hover{border-color:var(--bdr2);background:var(--surf2);}
+
+.empty-state{text-align:center;padding:32px 20px;color:var(--t3);font-size:13px;}
+.empty-state svg{display:block;margin:0 auto 10px;opacity:.4;}
+
+.step-dots{display:flex;gap:4px;align-items:center;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr2);border:1px solid var(--bdr);}
+.step-dot.filled{background:var(--blu);border-color:var(--blu);}
+.step-dot.filled.maxed{background:var(--pur);border-color:var(--pur);}
+.avatar-img{width:100%;height:100%;object-fit:cover;}
+.ao-avatar-ring{position:relative;}
+.ao-avatar-ring::after{content:'📷';position:absolute;bottom:-2px;right:-2px;font-size:10px;background:var(--surf);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bdr);}
+
+@media(max-width:900px){
+.login-card{grid-template-columns:1fr;}
+.login-right{display:none;}
+.sa-layout{grid-template-columns:1fr;}
+.ao-grid{grid-template-columns:1fr;}
+.teacher-grid{grid-template-columns:1fr;}
+.ao-stats{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:600px){
+.ao-stats{grid-template-columns:1fr 1fr;}
+.topbar{padding:0 14px;}
+}
+</style>
+</head>
+<body>
+
+<div id="loading-view">
+<div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+<div class="ll-brand-icon" style="width:48px;height:48px;border-radius:12px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg></div>
+<div class="loader-ring"></div>
+<p style="font-size:13px;color:var(--t3);">Loading your workspace…</p>
+</div>
+</div>
+
+<div id="login-view">
+<div class="login-view">
+<div class="login-card">
+<div class="login-left">
+<div class="login-logo">
+<div class="ll-brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg></div>
+<span class="ll-brand-name">LeaveLedger</span>
+</div>
+<div class="login-title">Welcome back</div>
+<p class="login-subtitle">Sign in to access your leave management dashboard.</p>
+<div class="login-input-wrap">
+<svg class="login-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+<input type="email" id="email" class="login-input" placeholder="Email Address">
+</div>
+<div class="login-input-wrap">
+<svg class="login-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+<input type="password" id="password" class="login-input" placeholder="Password" style="padding-right:44px;">
+<button class="pw-toggle" onclick="togglePasswordVisibility()"><svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+</div>
+<button id="login-btn" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:14px;padding:11px;">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+Sign In
+</button>
+<div style="display:flex;justify-content:space-between;">
+<a href="#" id="forgot-password-link" style="font-size:12.5px;color:var(--acc);">Forgot Password?</a>
+<a href="#" id="view-privacy-link" style="font-size:12px;color:var(--t3);">Privacy Policy</a>
+</div>
+</div>
+<div class="login-right">
+<p style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);font-weight:600;margin-bottom:6px;">Guidelines</p>
+<div class="guide-title">Before You<br>Proceed</div>
+<p class="guide-sub">Please read and acknowledge the following before accessing the system.</p>
+<div class="guide-item" style="animation-delay:.1s;">
+<div class="guide-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg></div>
+<div><div class="guide-item-title">Official Email Only</div><div class="guide-item-desc">Use your official organizational email to access the system.</div></div>
+</div>
+<div class="guide-item" style="animation-delay:.2s;">
+<div class="guide-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+<div><div class="guide-item-title">School Scope</div><div class="guide-item-desc">Manage only teachers and records within your assigned school.</div></div>
+</div>
+<div class="guide-item" style="animation-delay:.3s;">
+<div class="guide-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+<div><div class="guide-item-title">Account Security</div><div class="guide-item-desc">Never share your credentials. You are responsible for all account activity.</div></div>
+</div>
+<div class="guide-item" style="animation-delay:.4s;">
+<div class="guide-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+<div><div class="guide-item-title">Full Transparency</div><div class="guide-item-desc">All credit modifications must include a valid reason and justification.</div></div>
+</div>
+<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr);">
+<a href="#" id="view-privacy-link2" style="font-size:12px;color:var(--t3);display:flex;align-items:center;gap:5px;">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+Data Privacy &amp; Liability Disclaimer
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="system-admin-view">
+<div class="topbar">
+<div class="topbar-left">
+<div class="ll-brand-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg></div>
+<span class="ll-brand-name">LeaveLedger</span>
+<span class="topbar-role">System Admin</span>
+</div>
+<div class="topbar-right">
+<span class="topbar-greeting" id="sys-admin-welcome"></span>
+<button id="install-btn-sys" class="btn btn-primary btn-sm hidden" title="Install LeaveLedger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Install App</button>
+<button id="sys-admin-logout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
+</div>
+</div>
+<div class="sa-layout">
+<div class="sa-sidebar">
+<div class="card" style="margin-bottom:16px;">
+<div class="card-header" style="margin-bottom:12px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>Create Admin</div></div>
+<div class="stepper-labels" id="admin-stepper-labels">
+<span class="stepper-label active" id="admin-sl-1">Email</span>
+<span class="stepper-label" id="admin-sl-2">Details</span>
+<span class="stepper-label" id="admin-sl-3">Confirm</span>
+</div>
+<div class="stepper-bar">
+<div class="stepper-seg active" id="admin-seg-1"></div>
+<div class="stepper-seg" id="admin-seg-2"></div>
+<div class="stepper-seg" id="admin-seg-3"></div>
+</div>
+<div id="admin-stepper-container">
+<div id="step-1" class="step-pane active"><div class="form-row"><input type="email" id="std-admin-email" class="input" placeholder="Official email address"></div></div>
+<div id="step-2" class="step-pane">
+<div class="form-row"><input type="text" id="std-admin-name" class="input" placeholder="Full name"></div>
+<div class="form-row"><input type="text" id="std-admin-designation" class="input" placeholder="Designation / Title"></div>
+<div class="form-row"><input type="text" id="std-admin-appointment-date" placeholder="Appointment Date" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" class="input"></div>
+</div>
+<div id="step-3" class="step-pane"><p style="font-size:12px;color:var(--t3);margin-bottom:10px;">Review before creating.</p><div id="admin-confirmation-details" style="font-size:13px;background:var(--bg2);padding:12px;border-radius:var(--rsm);border:1px solid var(--bdr);"></div></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+<button id="stepper-back-btn" class="btn btn-secondary btn-sm" style="display:none;">Back</button>
+<button id="stepper-next-btn" class="btn btn-primary btn-sm">Next →</button>
+<button id="create-std-admin-btn" class="btn btn-primary btn-sm" style="display:none;">Create &amp; Send Email</button>
+</div>
+</div>
+<div class="card" style="margin-bottom:16px;">
+<div class="card-header" style="margin-bottom:12px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>Create School</div></div>
+<div style="display:flex;flex-direction:column;gap:10px;">
+<input type="text" id="school-name" class="input" placeholder="School Name">
+<select id="school-district" class="input"><option disabled selected value="">— Select District —</option><option>Babak</option><option>Samal</option><option>Kaputian</option><option>Talicud</option></select>
+<button id="create-school-btn" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create School</button>
+</div>
+</div>
+<div class="card">
+<div class="card-header" style="margin-bottom:12px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>System Reports</div></div>
+<div id="report-teacher-summary-btn" class="report-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Teacher Count by School</div>
+<div id="report-teacher-service-btn" class="report-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Teachers by Service Length</div>
+<div id="report-admin-summary-btn" class="report-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Administrator Summary</div>
+<div id="report-suspended-btn" class="report-row danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg><span style="color:var(--red);">Suspended Accounts</span></div>
+</div>
+</div>
+<div class="sa-main">
+<div style="margin-bottom:20px;">
+<h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">System Dashboard</h2>
+<p style="font-size:13px;color:var(--t3);">Manage administrators, schools, and system reports.</p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+<div>
+</div>
+</div>
+</div>
+
+<div id="pdf-overlay" class="pdf-overlay">
+<div class="pdf-card">
+<div class="pdf-spinner"></div>
+<div class="pdf-label">Generating Report…</div>
+<div class="pdf-sub">Fetching data, please wait.</div>
+<div class="pdf-bar-wrap"><div class="pdf-bar" id="pdf-bar"></div></div>
+</div>
+</div>
+
+<button id="feedback-button" class="feedback-btn hidden" title="Submit Feedback">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+
+<div class="toast-container" id="toast-container"></div>
+
+</div>
+
+<div id="standard-admin-view">
+<div class="topbar">
+<div class="topbar-left">
+<div class="ll-brand-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg></div>
+<span class="ll-brand-name">LeaveLedger</span>
+<span class="topbar-role">Admin Officer</span>
+<span class="topbar-school" id="std-admin-school-name"></span>
+</div>
+<div class="topbar-right">
+<button id="ao-my-account-btn" class="btn btn-secondary btn-sm" style="display:flex;align-items:center;gap:6px;">
+<div id="ao-avatar-mini" style="width:24px;height:24px;border-radius:50%;background:var(--acc-bg);border:1.5px solid var(--acc-bdr);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+</div>
+<span id="std-admin-welcome" style="font-size:13px;color:var(--t2);"></span>
+</button>
+<button id="std-admin-logout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
+<button id="install-btn-ao" class="btn btn-primary btn-sm hidden" title="Install LeaveLedger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Install</button>
+</div>
+</div>
+<div class="ao-layout">
+<div class="ao-stats">
+<div class="stat-card"><div class="stat-icon" style="background:var(--acc-bg);color:var(--acc)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-value" id="active-teacher-count">—</div><div class="stat-label">Active Teachers</div></div>
+<div class="stat-card"><div class="stat-icon" style="background:var(--blu-bg);color:var(--blu)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div class="stat-value" id="transfer-count">—</div><div class="stat-label">Pending Transfers</div></div>
+<div class="stat-card" style="cursor:pointer;" onclick="openConvTab()"><div class="stat-icon" style="background:var(--grn-bg);color:var(--grn)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="stat-value" id="ao-unread-count">—</div><div class="stat-label">Unread Messages</div></div>
+<div class="stat-card"><div class="stat-icon" style="background:var(--acc-bg);color:var(--acc)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="stat-value" id="ao-own-credits">—</div><div class="stat-label">My Leave Credits</div></div>
+</div>
+<div class="ao-grid">
+<div class="ao-main">
+<div class="card">
+<div class="card-header">
+<div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>Teachers</div>
+</div>
+<div class="search-wrap"><svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="teacher-search" class="input" placeholder="Search by name or email…"></div>
+<div id="teacher-list"></div>
+</div>
+<div class="card">
+<div class="card-header"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>Transfers</div></div>
+<div class="tab-row">
+<button class="tab-btn active" onclick="switchTab(this,'tab-incoming')">Incoming</button>
+<button class="tab-btn" onclick="switchTab(this,'tab-outgoing')">Outgoing</button>
+<button class="tab-btn" onclick="switchTab(this,'tab-reports')">Reports</button>
+<button class="tab-btn" onclick="switchTab(this,'tab-conv');openConvTab()">Messages</button>
+</div>
+<div id="tab-incoming" class="tab-pane active"><div id="transfer-requests-list"></div></div>
+<div id="tab-outgoing" class="tab-pane"><div id="outgoing-transfers-list"></div></div>
+<div id="tab-reports" class="tab-pane">
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div id="ao-report-all-btn" class="report-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>All Teachers Report</div>
+<div id="ao-report-individual-btn" class="report-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Individual Report</div>
+<div id="ao-report-deduction-btn" class="report-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Deduction Summary</div>
+</div>
+</div>
+<div id="tab-conv" class="tab-pane"><div id="ao-conv-list"></div></div>
+</div>
+</div>
+<div class="ao-side">
+<div class="card">
+<div class="card-header" style="margin-bottom:12px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>Add Teacher</div></div>
+<div class="stepper-labels" id="teacher-stepper-labels">
+<span class="stepper-label active" id="teacher-sl-1">Email</span>
+<span class="stepper-label" id="teacher-sl-2">Details</span>
+<span class="stepper-label" id="teacher-sl-3">Confirm</span>
+</div>
+<div class="stepper-bar">
+<div class="stepper-seg active" id="teacher-seg-1"></div>
+<div class="stepper-seg" id="teacher-seg-2"></div>
+<div class="stepper-seg" id="teacher-seg-3"></div>
+</div>
+<div id="teacher-stepper-container">
+<div id="teacher-step-1" class="step-pane active"><div class="form-row"><input type="email" id="teacher-email" class="input" placeholder="Official email address"></div></div>
+<div id="teacher-step-2" class="step-pane">
+<div class="form-row"><input type="text" id="teacher-name" class="input" placeholder="Full name"></div>
+<div class="form-row"><input type="text" id="teacher-designation" class="input" placeholder="Designation / Title"></div>
+<div class="form-row"><input type="text" id="teacher-appointment-date" placeholder="Appointment Date" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" class="input"></div>
+</div>
+<div id="teacher-step-3" class="step-pane"><p style="font-size:12px;color:var(--t3);margin-bottom:10px;">Review before creating.</p><div id="teacher-confirmation-details" style="font-size:13px;background:var(--bg2);padding:12px;border-radius:var(--rsm);border:1px solid var(--bdr);"></div></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+<button id="teacher-stepper-back-btn" class="btn btn-secondary btn-sm" style="display:none;">Back</button>
+<button id="teacher-stepper-next-btn" class="btn btn-primary btn-sm">Next →</button>
+<button id="create-teacher-btn" class="btn btn-primary btn-sm" style="display:none;">Create &amp; Send Email</button>
+</div>
+</div>
+<div class="card">
+<div class="card-header" style="margin-bottom:12px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>Announcements</div><button onclick="openModal('announce-modal')" class="btn btn-amber btn-sm">Post</button></div>
+<div id="ao-announcements-list"><p class="empty-state">No announcements.</p></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="teacher-view">
+<div class="topbar">
+<div class="topbar-left">
+<div class="ll-brand-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg></div>
+<span class="ll-brand-name">LeaveLedger</span>
+</div>
+<div class="topbar-right">
+<span id="teacher-welcome-header" style="font-size:13px;color:var(--t2);"></span>
+<button id="install-btn-teacher" class="btn btn-primary btn-sm hidden" title="Install LeaveLedger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Install</button>
+<button id="teacher-logout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
+</div>
+</div>
+<div class="teacher-layout">
+<div class="teacher-grid">
+<div class="teacher-profile-card">
+<div class="card">
+<div class="credits-hero">
+<div id="teacher-avatar" onclick="openProfilePicModal()" style="width:72px;height:72px;border-radius:50%;background:var(--acc-bg);border:2.5px solid var(--acc-bdr);overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;cursor:pointer;transition:opacity .15s;" title="Change profile picture">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+</div>
+<div class="credits-num" id="teacher-leave-credits">0</div>
+<div class="credits-label">Leave Credits</div>
+</div>
+<div style="padding:0 16px 16px;">
+<div style="text-align:center;margin-bottom:12px;">
+<div id="teacher-welcome-name" style="font-family:'Outfit',sans-serif;font-weight:700;font-size:15px;color:var(--t1);margin-bottom:2px;"></div>
+<div id="teacher-school-name" style="font-size:12px;color:var(--t3);"></div>
+</div>
+<div id="teacher-designation-display" style="text-align:center;font-size:12px;color:var(--acc);font-weight:600;margin-bottom:12px;background:var(--acc-bg);padding:4px 10px;border-radius:99px;border:1px solid var(--acc-bdr);display:inline-block;width:100%;"></div>
+<div id="teacher-details" style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--t2);margin-bottom:14px;"></div>
+<div id="teacher-step-area" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;">
+<div id="teacher-step-dots" class="step-dots"></div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:12px;">
+<div class="card-header" style="margin-bottom:10px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>Messages</div></div>
+<div id="teacher-conv-list" style="max-height:200px;overflow-y:auto;"></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-bottom:16px;">
+<div class="card-header" style="margin-bottom:12px;"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>Announcements</div></div>
+<div id="teacher-announcements-list"><p class="empty-state">No announcements.</p></div>
+</div>
+<div class="card">
+<div class="card-header"><div class="card-title"><div class="card-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>Credit History</div></div>
+<div id="leave-history" style="max-height:460px;overflow-y:auto;margin-top:12px;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="profile-pic-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;text-align:center;">
+<button class="modal-close" onclick="closeModal('profile-pic-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Profile Picture</div>
+<div id="pic-preview-wrap" style="width:96px;height:96px;border-radius:50%;background:var(--bg2);border:2px solid var(--bdr);overflow:hidden;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+</div>
+<p style="font-size:12px;color:var(--t3);margin-bottom:14px;">Photo is stored privately — only you can see it.</p>
+<input type="file" id="pic-file-input" accept="image/*" style="display:none;">
+<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+<button onclick="document.getElementById('pic-file-input').click()" class="btn btn-secondary">Choose Photo</button>
+<button id="save-pic-btn" class="btn btn-primary" disabled>Save</button>
+<button id="remove-pic-btn" class="btn btn-danger btn-sm" style="display:none;">Remove</button>
+</div>
+<div id="pic-upload-status" style="font-size:12px;color:var(--t3);margin-top:10px;"></div>
+</div>
+</div>
+
+<div id="ao-account-modal" class="modal-bg">
+<div class="modal-box lg" style="position:relative;">
+<button class="modal-close" onclick="closeModal('ao-account-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+<div id="ao-account-avatar" onclick="openProfilePicModal()" style="width:64px;height:64px;border-radius:50%;background:var(--acc-bg);border:2px solid var(--acc-bdr);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Change profile picture">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+</div>
+<div>
+<div id="ao-account-name" style="font-family:'Outfit',sans-serif;font-weight:700;font-size:17px;color:var(--t1);"></div>
+<div id="ao-account-desig" style="font-size:12px;color:var(--t3);"></div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+<span style="font-size:13px;color:var(--t2);">Leave Credits:</span>
+<span id="ao-account-credits" style="font-family:'Outfit',sans-serif;font-weight:800;font-size:22px;color:var(--acc);">—</span>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:16px;">
+<button onclick="openAOCreditModal('add')" class="btn btn-success btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Credits</button>
+<button onclick="openAOCreditModal('deduct')" class="btn btn-danger btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>Deduct Credits</button>
+</div>
+<div id="ao-own-history" style="max-height:320px;overflow-y:auto;"></div>
+</div>
+</div>
+
+<div id="ao-credit-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('ao-credit-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div id="ao-credit-modal-title" class="modal-title"></div>
+<input type="hidden" id="ao-credit-action">
+<div class="form-row"><label class="form-label">Amount</label><input type="number" id="ao-credit-amount" class="input" placeholder="0.00" min="0.01" step="0.01"></div>
+<div class="form-row"><label class="form-label">Reason / Justification</label><textarea id="ao-credit-reason" class="input" placeholder="Enter reason…"></textarea></div>
+<div class="form-row" id="ao-deduction-type-wrap" style="display:none;">
+<label class="form-label">Deduction Type</label>
+<select id="ao-deduction-type" class="input"><option disabled selected value="">— Select Type —</option><option>Vacation Leave</option><option>Sick Leave</option><option>Emergency Leave</option><option>Mandatory Leave</option><option>Special Leave</option><option>Other</option></select>
+</div>
+<div id="ao-credit-error" class="form-error" style="display:none;margin-bottom:10px;"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('ao-credit-modal')">Cancel</button><button id="save-ao-credit-btn" class="btn btn-primary">Confirm</button></div>
+</div>
+</div>
+
+<div id="data-privacy-modal" class="modal-bg">
+<div class="modal-box md" style="position:relative;">
+<button class="modal-close" onclick="closeModal('data-privacy-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Data Privacy & Liability</div>
+<div style="font-size:13px;color:var(--t2);line-height:1.7;max-height:340px;overflow-y:auto;">
+<p style="margin-bottom:12px;"><strong>RA 10173 Compliance:</strong> This system collects and processes personal data in accordance with the Data Privacy Act of 2012. All data is stored securely and used solely for leave management purposes.</p>
+<p style="margin-bottom:12px;"><strong>Security:</strong> All transmissions are encrypted. You are responsible for maintaining the confidentiality of your login credentials.</p>
+<p style="margin-bottom:12px;"><strong>Liability:</strong> The system administrators are not liable for any unauthorized access resulting from user negligence. Report suspicious activity immediately.</p>
+<p><strong>Agreement:</strong> By using this system, you acknowledge that you have read and agree to these terms.</p>
+</div>
+<div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('data-privacy-modal')">I Understand</button></div>
+</div>
+</div>
+
+<div id="reset-password-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('reset-password-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Reset Password</div>
+<p style="font-size:13px;color:var(--t3);margin-bottom:16px;">Enter your email address to receive a password reset link.</p>
+<div class="form-row"><input type="email" id="reset-email" class="input" placeholder="Your email address"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('reset-password-modal')">Cancel</button><button id="send-reset-link-btn" class="btn btn-primary">Send Reset Link</button></div>
+</div>
+</div>
+
+<div id="alert-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;text-align:center;">
+<div style="width:48px;height:48px;border-radius:12px;background:var(--acc-bg);border:1px solid var(--acc-bdr);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+<div id="alert-title" class="modal-title" style="text-align:center;"></div>
+<p id="alert-message" style="font-size:13.5px;color:var(--t2);line-height:1.6;margin-bottom:20px;"></p>
+<button class="btn btn-primary" onclick="closeModal('alert-modal')">OK</button>
+</div>
+</div>
+
+<div id="confirm-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;text-align:center;">
+<div style="width:48px;height:48px;border-radius:12px;background:var(--red-bg);border:1px solid var(--red-bdr);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="12 8 12 12"/><line x1="12" y1="16" x2="12.01" y2="16"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
+<div id="confirm-title" class="modal-title" style="text-align:center;"></div>
+<p id="confirm-message" style="font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6;"></p>
+<div style="display:flex;gap:8px;justify-content:center;"><button class="btn btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button><button id="confirm-action-btn" class="btn btn-danger">Confirm</button></div>
+</div>
+</div>
+
+<div id="edit-school-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('edit-school-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Edit School</div>
+<input type="hidden" id="edit-school-id">
+<div class="form-row"><label class="form-label">School Name</label><input type="text" id="edit-school-name" class="input" placeholder="School name"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('edit-school-modal')">Cancel</button><button id="save-school-changes-btn" class="btn btn-primary">Save Changes</button></div>
+</div>
+</div>
+
+<div id="edit-admin-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('edit-admin-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Edit Administrator</div>
+<input type="hidden" id="edit-admin-id">
+<div class="form-row"><label class="form-label">Full Name</label><input type="text" id="edit-admin-name" class="input"></div>
+<div class="form-row"><label class="form-label">Designation</label><input type="text" id="edit-admin-designation" class="input"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('edit-admin-modal')">Cancel</button><button id="save-admin-changes-btn" class="btn btn-primary">Save Changes</button></div>
+</div>
+</div>
+
+<div id="assign-school-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('assign-school-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Assign School</div>
+<input type="hidden" id="assign-admin-id">
+<div class="form-row"><label class="form-label">Select School</label><select id="assign-school-select" class="input"><option disabled selected value="">— Select School —</option></select></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('assign-school-modal')">Cancel</button><button id="save-assign-school-btn" class="btn btn-primary">Assign</button></div>
+</div>
+</div>
+
+<div id="edit-teacher-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('edit-teacher-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Edit Teacher</div>
+<input type="hidden" id="edit-teacher-id">
+<div class="form-row"><label class="form-label">Full Name</label><input type="text" id="edit-teacher-name" class="input"></div>
+<div class="form-row"><label class="form-label">Email (read-only)</label><input type="text" id="edit-teacher-email-display" class="input" disabled></div>
+<div class="form-row"><label class="form-label">Designation</label><input type="text" id="edit-teacher-designation" class="input"></div>
+<div class="form-row"><label class="form-label">Appointment Date</label><input type="date" id="edit-teacher-appointment-date" class="input"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('edit-teacher-modal')">Cancel</button><button id="save-teacher-changes-btn" class="btn btn-primary">Save</button></div>
+</div>
+</div>
+
+<div id="manage-credits-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('manage-credits-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div id="manage-credits-title" class="modal-title"></div>
+<input type="hidden" id="manage-credits-teacher-id">
+<input type="hidden" id="manage-credits-action">
+<div class="form-row"><label class="form-label">Amount</label><input type="number" id="credit-amount" class="input" placeholder="0.00" min="0.01" step="0.01"></div>
+<div class="form-row"><label class="form-label">Reason / Justification</label><textarea id="credit-reason" class="input" placeholder="Enter reason…"></textarea></div>
+<div class="form-row" id="deduction-type-wrap">
+<label class="form-label">Deduction Type</label>
+<select id="deduction-type" class="input"><option disabled selected value="">— Select Type —</option><option>Vacation Leave</option><option>Sick Leave</option><option>Emergency Leave</option><option>Mandatory Leave</option><option>Special Leave</option><option>Other</option></select>
+</div>
+<div id="manage-credits-error" class="form-error" style="display:none;margin-bottom:10px;"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('manage-credits-modal')">Cancel</button><button id="save-credits-btn" class="btn btn-primary">Confirm</button></div>
+</div>
+</div>
+
+<div id="transfer-teacher-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('transfer-teacher-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Transfer Teacher</div>
+<input type="hidden" id="transfer-teacher-id">
+<div class="form-row"><label class="form-label">Destination School</label><select id="transfer-school-select" class="input"><option disabled selected value="">— Select School —</option></select></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('transfer-teacher-modal')">Cancel</button><button id="send-transfer-request-btn" class="btn btn-primary">Send Request</button></div>
+</div>
+</div>
+
+<div id="promote-teacher-modal" class="modal-bg">
+<div class="modal-box md" style="position:relative;">
+<button class="modal-close" onclick="closeModal('promote-teacher-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Promote Teacher</div>
+<input type="hidden" id="promote-teacher-id">
+<div style="background:var(--pur-bg);border:1px solid var(--pur-bdr);border-radius:var(--r);padding:12px;margin-bottom:16px;">
+<div style="font-size:12px;color:var(--t3);margin-bottom:4px;">Current Position</div>
+<div id="promote-current-info" style="font-size:13px;font-weight:600;color:var(--pur);"></div>
+</div>
+<div class="form-row"><label class="form-label">New Designation</label><input type="text" id="promote-new-designation" class="input" placeholder="New position title"></div>
+<div class="form-row"><label class="form-label">Starting Step (1–8)</label><input type="number" id="promote-new-step" class="input" value="1" min="1" max="8"></div>
+<div class="form-row"><label class="form-label">Effective Date</label><input type="date" id="promote-effective-date" class="input"></div>
+<div class="form-row"><label class="form-label">Remarks (optional)</label><textarea id="promote-remarks" class="input" placeholder="Additional notes…"></textarea></div>
+<div id="promote-error" class="form-error" style="display:none;margin-bottom:10px;"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('promote-teacher-modal')">Cancel</button><button id="save-promotion-btn" class="btn btn-purple">Confirm Promotion</button></div>
+</div>
+</div>
+
+<div id="position-history-modal" class="modal-bg">
+<div class="modal-box md" style="position:relative;">
+<button class="modal-close" onclick="closeModal('position-history-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div id="pos-hist-modal-title" class="modal-title"></div>
+<div id="position-history-content" style="max-height:400px;overflow-y:auto;"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('position-history-modal')">Close</button></div>
+</div>
+</div>
+
+<div id="announce-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('announce-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Post Announcement</div>
+<div class="form-row"><label class="form-label">Title</label><input type="text" id="announce-title" class="input" placeholder="Announcement title"></div>
+<div class="form-row"><label class="form-label">Message</label><textarea id="announce-body" class="input" placeholder="Your message to all teachers…"></textarea></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('announce-modal')">Cancel</button><button id="save-announce-btn" class="btn btn-amber">Post Announcement</button></div>
+</div>
+</div>
+
+<div id="feedback-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('feedback-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Submit Feedback</div>
+<p style="font-size:13px;color:var(--t3);margin-bottom:16px;">Share your thoughts, issues, or suggestions about this system.</p>
+<div class="form-row"><textarea id="feedback-message" class="input" placeholder="Your feedback…" style="min-height:100px;"></textarea></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('feedback-modal')">Cancel</button><button id="submit-feedback-btn" class="btn btn-amber">Submit</button></div>
+</div>
+</div>
+
+<div id="teacher-history-modal" class="modal-bg">
+<div class="modal-box lg" style="position:relative;">
+<button class="modal-close" onclick="closeModal('teacher-history-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div id="teacher-history-title" class="modal-title"></div>
+<div id="teacher-history-content" style="max-height:460px;overflow-y:auto;"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('teacher-history-modal')">Close</button></div>
+</div>
+</div>
+
+<div id="query-conversation-modal" class="modal-bg">
+<div class="modal-box chat" style="position:relative;">
+<button class="modal-close" onclick="closeModal('query-conversation-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div id="conv-modal-title" class="modal-title" style="margin-bottom:12px;"></div>
+<div id="conversation-thread" class="conv-thread"></div>
+<div class="conv-input-row">
+<input type="text" id="conversation-reply-message" class="input" placeholder="Type a message…" style="flex:1;">
+<button id="conversation-send-btn" class="btn btn-primary" style="flex-shrink:0;">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+</button>
+</div>
+</div>
+</div>
+
+<div id="individual-report-modal" class="modal-bg">
+<div class="modal-box" style="position:relative;">
+<button class="modal-close" onclick="closeModal('individual-report-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Individual Report</div>
+<div class="form-row"><label class="form-label">Select Teacher</label><select id="individual-report-select" class="input"><option disabled selected value="">— Select —</option></select></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('individual-report-modal')">Cancel</button><button id="generate-individual-report-btn" class="btn btn-primary">Generate PDF</button></div>
+</div>
+</div>
+
+<div id="deduction-report-modal" class="modal-bg">
+<div class="modal-box md" style="position:relative;">
+<button class="modal-close" onclick="closeModal('deduction-report-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div class="modal-title">Deduction Summary Report</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+<div class="form-row" style="margin-bottom:0;"><label class="form-label">Start Date</label><input type="date" id="report-start-date" class="input"></div>
+<div class="form-row" style="margin-bottom:0;"><label class="form-label">End Date</label><input type="date" id="report-end-date" class="input"></div>
+</div>
+<div class="form-row"><label class="form-label">Deduction Types</label><select id="report-deduction-types" class="input" multiple style="min-height:120px;"><option>Vacation Leave</option><option>Sick Leave</option><option>Emergency Leave</option><option>Mandatory Leave</option><option>Special Leave</option><option>Other</option></select><div class="form-hint">Hold Ctrl/Cmd to select multiple.</div></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('deduction-report-modal')">Cancel</button><button id="generate-deduction-report-btn" class="btn btn-primary">Generate</button></div>
+</div>
+</div>
+
+<div id="sys-report-preview-modal" class="modal-bg">
+<div class="modal-box lg" style="position:relative;">
+<button class="modal-close" onclick="closeModal('sys-report-preview-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+<div id="sys-report-title" class="modal-title"></div>
+<div id="sys-report-content" style="max-height:420px;overflow:auto;font-size:13px;"></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sys-report-preview-modal')">Close</button><button id="sys-report-download-btn" class="btn btn-primary">Download PDF</button></div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getDatabase, ref, set, get, push, update, remove, onValue, onChildAdded } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+import 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js';
+
+const { jsPDF } = window.jspdf;
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB0m82JwcsR8mhSztvd0flo89AKzxdMgbo",
+    authDomain: "babakdistrictleavetracker.firebaseapp.com",
+    databaseURL: "https://babakdistrictleavetracker-default-rtdb.firebaseio.com",
+    projectId: "babakdistrictleavetracker",
+    storageBucket: "babakdistrictleavetracker.firebasestorage.app",
+    messagingSenderId: "31084588067",
+    appId: "1:31084588067:web:c29f1bf2300d6634b9d596"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const loadingView = document.getElementById('loading-view');
+const loginView = document.getElementById('login-view');
+const sysView = document.getElementById('system-admin-view');
+const aoView = document.getElementById('standard-admin-view');
+const teacherView = document.getElementById('teacher-view');
+const feedbackBtn = document.getElementById('feedback-button');
+
+let schoolCache = null, userCache = {}, activeListeners = {}, displayedNotifications = new Set(), resetTeacherStepper;
+
+function clearListeners() {
+    Object.values(activeListeners).forEach(l => { if (l?.unsubscribe) l.unsubscribe(); });
+    activeListeners = {};
+}
+
+function showView(view) {
+    loadingView.style.display = 'none';
+    [loginView, sysView, aoView, teacherView].forEach(v => v.classList.remove('active'));
+    view.classList.add('active');
+}
+
+onAuthStateChanged(auth, user => {
+    clearListeners();
+    if (user) {
+        showDashboard();
+    } else {
+        feedbackBtn.classList.add('hidden');
+        showView(loginView);
+    }
+});
+
+
+function showDashboard() {
+    const user = auth.currentUser;
+    feedbackBtn.classList.add('hidden');
+    get(ref(db, `users/${user.uid}`)).then(async snap => {
+        if (!snap.exists()) { auth.signOut(); return; }
+        const ud = snap.val();
+        if (ud.active === false) { auth.signOut(); showAlert('Your account has been deactivated.'); return; }
+        const name = ud.name || fmtEmail(user.email);
+        await loadProfilePicture(user.uid, user.email);
+        if (ud.role === 'system-admin') { showView(sysView); loadSysAdmin(name); }
+        else if (ud.role === 'standard-admin') { showView(aoView); loadAO(user.uid, name, ud); feedbackBtn.classList.remove('hidden'); }
+        else if (ud.role === 'teacher') { showView(teacherView); loadTeacher(user.uid, ud); }
+        else auth.signOut();
+    }).catch(() => { auth.signOut(); showView(loginView); });
+}
+
+let currentUserEmail = null;
+let currentUserId = null;
+let pendingPicDataUrl = null;
+
+async function loadProfilePicture(uid, email) {
+    currentUserId = uid;
+    currentUserEmail = email;
+    try {
+        const snap = await get(ref(db, `profilePictures/${uid}`));
+        if (snap.exists() && snap.val().data && snap.val().email === email) {
+            applyAvatarEverywhere(snap.val().data);
+        }
+    } catch(e) {}
+}
+
+function applyAvatarEverywhere(dataUrl) {
+    const imgHtml = `<img src="${dataUrl}" class="avatar-img" alt="Profile">`;
+    ['teacher-avatar','ao-account-avatar','ao-avatar-mini'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = imgHtml;
+    });
+    const previewWrap = document.getElementById('pic-preview-wrap');
+    if (previewWrap) previewWrap.innerHTML = imgHtml;
+    const removBtn = document.getElementById('remove-pic-btn');
+    if (removBtn) removBtn.style.display = '';
+}
+
+window.openProfilePicModal = async () => {
+    pendingPicDataUrl = null;
+    const savBtn = document.getElementById('save-pic-btn');
+    savBtn.disabled = true;
+    document.getElementById('pic-upload-status').textContent = '';
+    if (currentUserId) {
+        try {
+            const snap = await get(ref(db, `profilePictures/${currentUserId}`));
+            if (snap.exists() && snap.val().data && snap.val().email === currentUserEmail) {
+                document.getElementById('pic-preview-wrap').innerHTML = `<img src="${snap.val().data}" class="avatar-img">`;
+                document.getElementById('remove-pic-btn').style.display = '';
+            } else {
+                document.getElementById('pic-preview-wrap').innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+                document.getElementById('remove-pic-btn').style.display = 'none';
+            }
+        } catch(e) {}
+    }
+    openModal('profile-pic-modal');
+};
+
+document.getElementById('pic-file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { document.getElementById('pic-upload-status').textContent = 'File too large (max 5MB).'; return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX = 256;
+            let w = img.width, h = img.height;
+            if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+            else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            pendingPicDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            document.getElementById('pic-preview-wrap').innerHTML = `<img src="${pendingPicDataUrl}" class="avatar-img">`;
+            document.getElementById('save-pic-btn').disabled = false;
+            document.getElementById('pic-upload-status').textContent = '';
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('save-pic-btn').addEventListener('click', async () => {
+    if (!pendingPicDataUrl || !currentUserId) return;
+    const btn = document.getElementById('save-pic-btn');
+    btn.disabled = true;
+    document.getElementById('pic-upload-status').textContent = 'Saving…';
+    try {
+        await set(ref(db, `profilePictures/${currentUserId}`), { data: pendingPicDataUrl, email: currentUserEmail, updatedAt: new Date().toISOString() });
+        applyAvatarEverywhere(pendingPicDataUrl);
+        document.getElementById('pic-upload-status').textContent = 'Saved!';
+        document.getElementById('remove-pic-btn').style.display = '';
+        setTimeout(() => closeModal('profile-pic-modal'), 900);
+    } catch(e) { document.getElementById('pic-upload-status').textContent = 'Error saving. Try again.'; btn.disabled = false; }
+});
+
+document.getElementById('remove-pic-btn').addEventListener('click', async () => {
+    if (!currentUserId) return;
+    await remove(ref(db, `profilePictures/${currentUserId}`));
+    ['teacher-avatar','ao-account-avatar','ao-avatar-mini'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    });
+    document.getElementById('pic-preview-wrap').innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    document.getElementById('remove-pic-btn').style.display = 'none';
+    pendingPicDataUrl = null;
+    closeModal('profile-pic-modal');
+});
+
+window.openConvTab = () => {
+    const tabs = document.querySelectorAll('#standard-admin-view .tab-btn');
+    const panes = document.querySelectorAll('#standard-admin-view .tab-pane');
+    tabs.forEach(t => t.classList.remove('active'));
+    panes.forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#standard-admin-view .tab-btn')[3]?.classList.add('active');
+    document.getElementById('tab-conv')?.classList.add('active');
+};
+
+window.switchTab = (btn, paneId) => {
+    const card = btn.closest('.card');
+    card.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    card.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(paneId)?.classList.add('active');
+};
+
+// ── PWA Install ──────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+const installBtnIds = ['install-btn-sys','install-btn-ao','install-btn-teacher'];
+
+window.addEventListener('beforeinstallprompt', e => {
+    deferredPrompt = e;
+    installBtnIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('hidden');
+    });
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installBtnIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.add('hidden');
+    });
+});
+
+installBtnIds.forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') deferredPrompt = null;
+    });
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+    const e = document.getElementById('email').value, p = document.getElementById('password').value;
+    if (!e || !p) { showAlert('Email and Password are required.'); return; }
+    loadingView.style.display = 'flex'; loginView.classList.remove('active');
+    try { await signInWithEmailAndPassword(auth, e, p); }
+    catch { showAlert('Invalid email or password.'); showView(loginView); }
+});
+
+window.togglePasswordVisibility = () => {
+    const pw = document.getElementById('password'), ic = document.getElementById('eye-icon');
+    if (pw.type === 'password') { pw.type = 'text'; ic.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'; }
+    else { pw.type = 'password'; ic.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'; }
+};
+
+document.getElementById('forgot-password-link').addEventListener('click', e => { e.preventDefault(); openModal('reset-password-modal'); });
+document.getElementById('view-privacy-link').addEventListener('click', e => { e.preventDefault(); openModal('data-privacy-modal'); });
+document.getElementById('view-privacy-link2').addEventListener('click', e => { e.preventDefault(); openModal('data-privacy-modal'); });
+
+document.getElementById('send-reset-link-btn').addEventListener('click', async () => {
+    const e = document.getElementById('reset-email').value;
+    if (!e) { showAlert('Enter your email.'); return; }
+    try { await sendPasswordResetEmail(auth, e); closeModal('reset-password-modal'); showAlert('Reset email sent.'); }
+    catch (err) { showAlert(err.message); }
+});
+
+['sys-admin-logout-btn','std-admin-logout-btn','teacher-logout-btn'].forEach(id => {
+    const b = document.getElementById(id); if (b) b.addEventListener('click', () => auth.signOut());
+});
+
+function fmtEmail(email) { return email?.split('@')[0].split('.').map(p => p[0].toUpperCase() + p.slice(1)).join(' ') || 'User'; }
+
+function initStepper(prefix, steps) {
+    let cur = 1;
+    const isAdmin = prefix === 'admin-';
+    const segPfx = isAdmin ? '' : 'teacher-';
+    const slPfx = isAdmin ? 'admin-sl-' : 'teacher-sl-';
+    const segId = isAdmin ? 'seg-' : 'teacher-seg-';
+    const paneId = isAdmin ? 'step-' : 'teacher-step-';
+    const nextId = isAdmin ? 'stepper-next-btn' : 'teacher-stepper-next-btn';
+    const backId = isAdmin ? 'stepper-back-btn' : 'teacher-stepper-back-btn';
+    const createId = isAdmin ? 'create-std-admin-btn' : 'create-teacher-btn';
+    const emailId = isAdmin ? 'std-admin-email' : 'teacher-email';
+    const nameId = isAdmin ? 'std-admin-name' : 'teacher-name';
+    const confId = isAdmin ? 'admin-confirmation-details' : 'teacher-confirmation-details';
+    const next = document.getElementById(nextId), back = document.getElementById(backId), create = document.getElementById(createId);
+
+    const goTo = n => {
+        if (n === 2) {
+            const em = document.getElementById(emailId).value;
+            if (!em) { showAlert('Email is required.'); return; }
+        }
+        if (n === 3) {
+            const em = document.getElementById(emailId).value, nm = document.getElementById(nameId).value;
+            if (!nm) { showAlert('Name is required.'); return; }
+            document.getElementById(confId).innerHTML = `<strong>${nm}</strong><br><span style="color:var(--t3)">${em}</span>`;
+        }
+        cur = n;
+        for (let i = 1; i <= steps; i++) {
+            const pane = document.getElementById(paneId + i);
+            if (pane) pane.className = 'step-pane' + (i === cur ? ' active' : '');
+            const sl = document.getElementById(slPfx + i);
+            if (sl) sl.className = 'stepper-label' + (i === cur ? ' active' : '');
+            const sg = document.getElementById(segId + i);
+            if (sg) sg.className = 'stepper-seg' + (i < cur ? ' done' : i === cur ? ' active' : '');
+        }
+        back.style.display = cur > 1 ? '' : 'none';
+        next.style.display = cur < steps ? '' : 'none';
+        create.style.display = cur === steps ? '' : 'none';
+    };
+
+    next.addEventListener('click', () => goTo(cur + 1));
+    back.addEventListener('click', () => goTo(cur - 1));
+    goTo(1);
+    return () => goTo(1);
+}
+
+function loadSysAdmin(name) {
+    document.getElementById('sys-admin-welcome').textContent = `Hello, ${name}`;
+    initStepper('admin-', 3);
+    loadSchools(); loadAdmins(); loadFeedback();
+
+    document.getElementById('create-school-btn').addEventListener('click', async () => {
+        const n = document.getElementById('school-name').value.trim(), d = document.getElementById('school-district').value;
+        if (!n || !d) { showAlert('School name and district required.'); return; }
+        const snap = await get(ref(db, 'schools')); let dup = false;
+        snap.forEach(c => { if (c.val().name.toLowerCase() === n.toLowerCase()) dup = true; });
+        if (dup) { showAlert('School with this name already exists.'); return; }
+        await set(push(ref(db, 'schools')), { name: n, district: d });
+        document.getElementById('school-name').value = ''; document.getElementById('school-district').value = '';
+        showAlert('School created.');
+    });
+
+    document.getElementById('create-std-admin-btn').addEventListener('click', async () => {
+        const email = document.getElementById('std-admin-email').value, name = document.getElementById('std-admin-name').value;
+        const desig = document.getElementById('std-admin-designation').value, appt = document.getElementById('std-admin-appointment-date').value;
+        if (!email || !name) { showAlert('Name and email required.'); return; }
+        const pw = Math.random().toString(36).slice(-8);
+        const sec = initializeApp(firebaseConfig, 'sa-' + Date.now()), secAuth = getAuth(sec);
+        try {
+            const cred = await createUserWithEmailAndPassword(secAuth, email, pw);
+            await set(ref(db, `users/${cred.user.uid}`), { email, name, designation: desig||'', appointmentDate: appt||'', role:'standard-admin', active:true });
+            await sendPasswordResetEmail(auth, email);
+            showAlert('Administrator created. Setup email sent.');
+        } catch(e) { showAlert(e.message); } finally { secAuth.app.delete(); }
+    });
+
+    document.getElementById('save-school-changes-btn').addEventListener('click', async () => {
+        const id = document.getElementById('edit-school-id').value, n = document.getElementById('edit-school-name').value.trim();
+        if (!n) { showAlert('Name required.'); return; }
+        await update(ref(db, `schools/${id}`), { name: n }); closeModal('edit-school-modal'); showAlert('School updated.');
+    });
+
+    document.getElementById('save-admin-changes-btn').addEventListener('click', async () => {
+        const id = document.getElementById('edit-admin-id').value;
+        await update(ref(db, `users/${id}`), { name: document.getElementById('edit-admin-name').value, designation: document.getElementById('edit-admin-designation').value });
+        closeModal('edit-admin-modal'); showAlert('Updated.');
+    });
+
+    document.getElementById('save-assign-school-btn').addEventListener('click', async () => {
+        const id = document.getElementById('assign-admin-id').value, sid = document.getElementById('assign-school-select').value;
+        if (!sid) { showAlert('Select a school.'); return; }
+        const snap = await get(ref(db, `schools/${sid}`)); if (!snap.exists()) return;
+        await update(ref(db, `users/${id}`), { schoolId: sid, schoolName: snap.val().name });
+        closeModal('assign-school-modal'); showAlert('School assigned.');
+    });
+
+    setupSysReports();
+}
+
+function loadSchools() {
+    const el = document.getElementById('school-list');
+    const unsub = onValue(ref(db, 'schools'), snap => {
+        el.innerHTML = '';
+        if (!snap.exists()) { el.innerHTML = '<p class="empty-state">No schools yet.</p>'; return; }
+        snap.forEach(c => {
+            const s = c.val(), d = document.createElement('div'); d.className = 'school-row';
+            d.innerHTML = `<div><div style="font-size:13px;font-weight:600;">${s.name}</div><div style="font-size:11px;color:var(--t3);">${s.district}</div></div>
+            <div style="display:flex;gap:4px;">
+            <button onclick="openEditSchoolModal('${c.key}','${s.name.replace(/'/g,"\\'")}')" class="ib ib-edit" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onclick="confirmDeleteSchool('${c.key}')" class="ib ib-del" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+            </div>`;
+            el.appendChild(d);
+        });
+    });
+    activeListeners.schools = { unsubscribe: unsub };
+}
+
+function loadAdmins() {
+    const el = document.getElementById('admin-list');
+    const unsub = onValue(ref(db, 'users'), snap => {
+        el.innerHTML = '';
+        const admins = [];
+        snap.forEach(c => { const u = c.val(); if (u.role === 'standard-admin') admins.push({ id: c.key, ...u }); });
+        if (!admins.length) { el.innerHTML = '<p class="empty-state">No administrators.</p>'; return; }
+        admins.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).forEach(a => {
+            const d = document.createElement('div'); d.className = 'admin-row';
+            d.innerHTML = `<div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;"><span style="font-weight:600;font-size:13.5px;">${a.name||'Unnamed'}</span>${a.active===false?'<span class="bdg bdg-red">Suspended</span>':''}</div>
+            <div style="font-size:12px;color:var(--t3);">${a.email}</div>
+            <div style="font-size:11.5px;color:var(--t2);margin-top:2px;">${a.designation||''} ${a.schoolName?'· '+a.schoolName:''}</div>
+            </div>
+            <div style="display:flex;gap:4px;align-items:center;">
+            <button onclick="openEditAdminModal('${a.id}')" class="ib ib-edit" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onclick="openAssignSchoolModal('${a.id}')" class="ib ib-step" title="Assign School"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+            <label class="toggle-wrap"><input type="checkbox" ${a.active!==false?'checked':''} onchange="toggleAdminStatus('${a.id}')"><span class="toggle-track"></span></label>
+            </div>`;
+            el.appendChild(d);
+        });
+    });
+    activeListeners.admins = { unsubscribe: unsub };
+}
+
+function loadFeedback() {
+    const el = document.getElementById('feedback-list');
+    const unsub = onValue(ref(db, 'feedback'), snap => {
+        el.innerHTML = '';
+        if (!snap.exists()) { el.innerHTML = '<p class="empty-state">No feedback.</p>'; return; }
+        snap.forEach(c => {
+            const f = c.val(), d = document.createElement('div'); d.className = 'feedback-item';
+            d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div><div style="font-size:13px;color:var(--t1);margin-bottom:4px;">${f.message}</div><div style="font-size:11px;color:var(--t3);">${f.from||''} · ${f.timestamp?new Date(f.timestamp).toLocaleString():''}</div></div>
+            <button onclick="deleteFeedback('${c.key}')" class="ib ib-del" style="flex-shrink:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+            </div>`;
+            el.appendChild(d);
+        });
+    });
+    activeListeners.feedback = { unsubscribe: unsub };
+}
+
+window.openEditSchoolModal = (id, name) => { document.getElementById('edit-school-id').value = id; document.getElementById('edit-school-name').value = name; openModal('edit-school-modal'); };
+window.confirmDeleteSchool = id => {
+    document.getElementById('confirm-title').textContent = 'Delete School';
+    document.getElementById('confirm-message').textContent = 'Are you sure you want to delete this school? This cannot be undone.';
+    const btn = document.getElementById('confirm-action-btn'), nb = btn.cloneNode(true); btn.parentNode.replaceChild(nb, btn);
+    nb.addEventListener('click', async () => { await remove(ref(db, `schools/${id}`)); closeModal('confirm-modal'); showAlert('School deleted.'); });
+    openModal('confirm-modal');
+};
+window.openEditAdminModal = async id => {
+    const snap = await get(ref(db, `users/${id}`)); if (!snap.exists()) return;
+    const u = snap.val();
+    document.getElementById('edit-admin-id').value = id;
+    document.getElementById('edit-admin-name').value = u.name||'';
+    document.getElementById('edit-admin-designation').value = u.designation||'';
+    openModal('edit-admin-modal');
+};
+window.openAssignSchoolModal = async id => {
+    document.getElementById('assign-admin-id').value = id;
+    const sel = document.getElementById('assign-school-select');
+    if (!schoolCache) { const snap = await get(ref(db, 'schools')); schoolCache = {}; snap.forEach(c => { schoolCache[c.key] = c.val(); }); }
+    sel.innerHTML = '<option disabled selected value="">— Select School —</option>';
+    Object.entries(schoolCache).forEach(([sid, s]) => { const o = document.createElement('option'); o.value = sid; o.textContent = `${s.name} (${s.district})`; sel.appendChild(o); });
+    openModal('assign-school-modal');
+};
+window.toggleAdminStatus = async id => { const s = await get(ref(db, `users/${id}`)); if (s.exists()) await update(ref(db, `users/${id}`), { active: s.val().active === false }); };
+window.deleteFeedback = async id => { await remove(ref(db, `feedback/${id}`)); };
+
+function setupSysReports() {
+    const show = (title, headers, rows, dlFn) => {
+        document.getElementById('sys-report-title').textContent = title;
+        const c = document.getElementById('sys-report-content'); c.innerHTML = '';
+        const t = document.createElement('table'); t.style.cssText = 'width:100%;border-collapse:collapse;font-size:12.5px;';
+        const tr = document.createElement('tr');
+        headers.forEach(h => { const th = document.createElement('th'); th.style.cssText = 'background:var(--acc-bg);color:var(--acc);padding:8px 10px;text-align:left;border-bottom:1px solid var(--bdr);font-size:11px;text-transform:uppercase;letter-spacing:.5px;'; th.textContent = h; tr.appendChild(th); });
+        t.appendChild(tr);
+        rows.forEach((r,i) => { const row = document.createElement('tr'); row.style.background = i%2===0?'var(--surf2)':'#fff'; r.forEach(cell => { const td = document.createElement('td'); td.style.cssText = 'padding:8px 10px;border-bottom:1px solid var(--bdr);'; td.textContent = cell; row.appendChild(td); }); t.appendChild(row); });
+        c.appendChild(t);
+        const dlBtn = document.getElementById('sys-report-download-btn'), nb = dlBtn.cloneNode(true); dlBtn.parentNode.replaceChild(nb, dlBtn);
+        nb.addEventListener('click', dlFn);
+        openModal('sys-report-preview-modal');
+    };
+
+    document.getElementById('report-teacher-summary-btn').addEventListener('click', async () => {
+        showPdfOverlay();
+        const snap = await get(ref(db,'users')); const counts = {};
+        snap.forEach(c => { const u=c.val(); if(u.role==='teacher'){ counts[u.schoolName||'Unassigned']=(counts[u.schoolName||'Unassigned']||0)+1; } });
+        hidePdfOverlay();
+        show('Teacher Count by School', ['School','Count'], Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0])).map(([s,c])=>[s,c]),
+        () => { const doc=new jsPDF(); pdfHeader(doc,'Teacher Count by School','System Report','All Schools',false); doc.autoTable({startY:38,head:[['School','Count']],body:Object.entries(counts).map(([s,c])=>[s,c]),styles:{fontSize:10},headStyles:{fillColor:[217,83,28]}}); addFooters(doc,''); doc.save('teacher_count.pdf'); closeModal('sys-report-preview-modal'); });
+    });
+
+    document.getElementById('report-teacher-service-btn').addEventListener('click', async () => {
+        showPdfOverlay();
+        const snap = await get(ref(db,'users')); const rows = [];
+        snap.forEach(c => { const u=c.val(); if(u.role==='teacher') rows.push([u.name||'N/A',u.schoolName||'N/A',u.appointmentDate||'N/A',calcService(u.appointmentDate)]); });
+        hidePdfOverlay();
+        show('Teachers by Service Length', ['Name','School','Appt. Date','Service'], rows.sort((a,b)=>a[0].localeCompare(b[0])),
+        () => { const doc=new jsPDF(); pdfHeader(doc,'Service Length Report','System Report','All Schools',false); doc.autoTable({startY:38,head:[['Name','School','Appt. Date','Service']],body:rows,styles:{fontSize:9},headStyles:{fillColor:[217,83,28]}}); addFooters(doc,''); doc.save('service_report.pdf'); closeModal('sys-report-preview-modal'); });
+    });
+
+    document.getElementById('report-admin-summary-btn').addEventListener('click', async () => {
+        showPdfOverlay();
+        const snap = await get(ref(db,'users')); const rows = [];
+        snap.forEach(c => { const u=c.val(); if(u.role==='standard-admin') rows.push([u.name||'N/A',u.email,u.schoolName||'Unassigned',u.designation||'N/A',u.active===false?'Suspended':'Active']); });
+        hidePdfOverlay();
+        show('Administrator Summary', ['Name','Email','School','Designation','Status'], rows.sort((a,b)=>a[0].localeCompare(b[0])),
+        () => { const doc=new jsPDF({orientation:'landscape'}); pdfHeader(doc,'Administrator Summary','System Report','All Schools',true); doc.autoTable({startY:38,head:[['Name','Email','School','Designation','Status']],body:rows,styles:{fontSize:9},headStyles:{fillColor:[217,83,28]}}); addFooters(doc,''); doc.save('admin_summary.pdf'); closeModal('sys-report-preview-modal'); });
+    });
+
+    document.getElementById('report-suspended-btn').addEventListener('click', async () => {
+        showPdfOverlay();
+        const snap = await get(ref(db,'users')); const rows = [];
+        snap.forEach(c => { const u=c.val(); if(u.active===false) rows.push([u.name||'N/A',u.email,u.role,u.schoolName||'N/A']); });
+        hidePdfOverlay();
+        show('Suspended Accounts', ['Name','Email','Role','School'], rows,
+        () => { const doc=new jsPDF(); pdfHeader(doc,'Suspended Accounts','System Report','All Schools',false); doc.autoTable({startY:38,head:[['Name','Email','Role','School']],body:rows,styles:{fontSize:9},headStyles:{fillColor:[220,38,38]}}); addFooters(doc,''); doc.save('suspended_accounts.pdf'); closeModal('sys-report-preview-modal'); });
+    });
+}
+
+async function loadAO(adminId, name, adminData) {
+    document.getElementById('std-admin-welcome').textContent = `Hello, ${name}`;
+    resetTeacherStepper = initStepper('teacher-', 3);
+
+    document.getElementById('ao-my-account-btn').addEventListener('click', () => openAOAccountModal(adminId));
+
+    document.getElementById('ao-account-name').textContent = name;
+    document.getElementById('ao-account-desig').textContent = adminData.designation || '';
+
+    const aoUnsub = onValue(ref(db, `users/${adminId}`), snap => {
+        if (!snap.exists()) return;
+        const u = snap.val();
+        const credits = u.leaveCredits || 0;
+        document.getElementById('ao-own-credits').textContent = credits;
+        document.getElementById('ao-account-credits').textContent = credits;
+        loadAOHistory(adminId);
+    });
+    activeListeners.aoUser = { unsubscribe: aoUnsub };
+
+    document.getElementById('save-ao-credit-btn').addEventListener('click', async () => {
+        const action = document.getElementById('ao-credit-action').value;
+        const amount = parseFloat(document.getElementById('ao-credit-amount').value);
+        const reason = document.getElementById('ao-credit-reason').value;
+        const dt = document.getElementById('ao-deduction-type').value;
+        const errEl = document.getElementById('ao-credit-error');
+        if (!reason || isNaN(amount) || amount <= 0) { errEl.textContent = 'Provide a valid amount and reason.'; errEl.style.display=''; return; }
+        if (action === 'deduct' && !dt) { errEl.textContent = 'Select a deduction type.'; errEl.style.display=''; return; }
+        errEl.style.display = 'none';
+        try {
+            const snap = await get(ref(db, `users/${adminId}`));
+            const cur = snap.val().leaveCredits || 0;
+            const change = action === 'deduct' ? -amount : amount;
+            const nb = cur + change;
+            if (action === 'deduct' && amount > cur) throw new Error('Deduction exceeds available credits.');
+            await update(ref(db, `users/${adminId}`), { leaveCredits: nb });
+            await set(push(ref(db, `leaveHistory/${adminId}`)), { date: new Date().toISOString(), reason, change, newBalance: nb, modifiedBy: name, ...(action === 'deduct' && { deductionType: dt }) });
+            closeModal('ao-credit-modal');
+        } catch(e) { errEl.textContent = e.message; errEl.style.display=''; }
+    });
+
+    let schoolName = adminData.schoolName;
+    if (!schoolName && adminData.schoolId) {
+        const snap = await get(ref(db, `schools/${adminData.schoolId}`));
+        if (snap.exists()) { schoolName = snap.val().name; await update(ref(db, `users/${adminId}`), { schoolName }); }
+    }
+    document.getElementById('std-admin-school-name').textContent = schoolName || 'Unassigned';
+
+    if (adminData.schoolId) {
+        loadTeacherList(adminData.schoolId);
+        loadTransfers(adminData.schoolId);
+        listenAONotifs(adminId);
+        loadAnnouncements(adminData.schoolId, 'ao-announcements-list');
+        updateTransferCount(adminData.schoolId);
+    }
+
+    document.getElementById('create-teacher-btn').addEventListener('click', async () => {
+        const email = document.getElementById('teacher-email').value, nm = document.getElementById('teacher-name').value;
+        const desig = document.getElementById('teacher-designation').value, appt = document.getElementById('teacher-appointment-date').value;
+        if (!email || !nm) { showAlert('Name and email required.'); return; }
+        const adminSnap = await get(ref(db, `users/${adminId}`));
+        const { schoolId: sid, schoolName: sn } = adminSnap.val();
+        if (!sid) { showAlert('You are not assigned to a school.'); return; }
+        const pw = Math.random().toString(36).slice(-8), sec = initializeApp(firebaseConfig, 'tc-' + Date.now()), secAuth = getAuth(sec);
+        try {
+            const cred = await createUserWithEmailAndPassword(secAuth, email, pw);
+            await set(ref(db, `users/${cred.user.uid}`), { email, name: nm, designation: desig||'', appointmentDate: appt||'', positionStartDate: appt||'', positionStartStep: 1, role:'teacher', schoolId: sid, schoolName: sn, leaveCredits:0, step:1, active:true });
+            await sendPasswordResetEmail(auth, email);
+            showAlert('Teacher created! Setup email sent.'); resetTeacherStepper?.();
+            ['teacher-email','teacher-name','teacher-designation'].forEach(id => document.getElementById(id).value='');
+        } catch(e) { showAlert(e.message); } finally { secAuth.app.delete(); }
+    });
+
+    document.getElementById('save-teacher-changes-btn').addEventListener('click', async () => {
+        const id = document.getElementById('edit-teacher-id').value;
+        await update(ref(db, `users/${id}`), { name: document.getElementById('edit-teacher-name').value, designation: document.getElementById('edit-teacher-designation').value, appointmentDate: document.getElementById('edit-teacher-appointment-date').value });
+        closeModal('edit-teacher-modal'); showAlert('Teacher updated.');
+    });
+
+    document.getElementById('save-credits-btn').addEventListener('click', async () => {
+        const id = document.getElementById('manage-credits-teacher-id').value;
+        const action = document.getElementById('manage-credits-action').value;
+        const reason = document.getElementById('credit-reason').value;
+        const amount = parseFloat(document.getElementById('credit-amount').value);
+        const dt = document.getElementById('deduction-type').value;
+        const errEl = document.getElementById('manage-credits-error');
+        if (!reason || isNaN(amount) || amount <= 0) { errEl.textContent = 'Provide a valid amount and reason.'; errEl.style.display=''; return; }
+        if (action==='deduct' && !dt) { errEl.textContent = 'Select a deduction type.'; errEl.style.display=''; return; }
+        errEl.style.display = 'none';
+        const adminSnap = await get(ref(db, `users/${adminId}`));
+        try {
+            const tSnap = await get(ref(db, `users/${id}`));
+            const cur = tSnap.val().leaveCredits || 0;
+            const change = action==='deduct' ? -amount : amount;
+            const nb = cur + change;
+            if (action==='deduct' && amount > cur) throw new Error('Deduction exceeds available credits.');
+            await update(ref(db, `users/${id}`), { leaveCredits: nb });
+            await set(push(ref(db, `leaveHistory/${id}`)), { date: new Date().toISOString(), reason, change, newBalance: nb, modifiedBy: adminSnap.val().name, ...(action==='deduct' && { deductionType: dt }) });
+            closeModal('manage-credits-modal'); showAlert('Credits updated.');
+            const msg = action==='add' ? `${amount} credit(s) added for: ${reason}.` : `${amount} credit(s) deducted for: ${reason} (${dt}).`;
+            await set(push(ref(db, `notifications/${id}`)), { message: msg, timestamp: new Date().toISOString() });
+        } catch(e) { errEl.textContent = e.message; errEl.style.display=''; }
+    });
+
+    
+    document.getElementById('send-transfer-request-btn').addEventListener('click', async () => {
+        const id = document.getElementById('transfer-teacher-id').value, toSchool = document.getElementById('transfer-school-select').value;
+        if (!toSchool) { showAlert('Select a destination school.'); return; }
+        const aSnap = await get(ref(db, `users/${adminId}`));
+        await set(push(ref(db, 'transfers')), { teacherId: id, fromSchool: aSnap.val().schoolId, toSchool, status:'pending' });
+        closeModal('transfer-teacher-modal'); showAlert('Transfer request sent.');
+    });
+
+    document.getElementById('save-promotion-btn').addEventListener('click', async () => {
+        const id = document.getElementById('promote-teacher-id').value;
+        const newDesig = document.getElementById('promote-new-designation').value.trim();
+        const newStep = parseInt(document.getElementById('promote-new-step').value);
+        const effDate = document.getElementById('promote-effective-date').value;
+        const remarks = document.getElementById('promote-remarks').value;
+        const errEl = document.getElementById('promote-error');
+        if (!newDesig) { errEl.textContent='New designation required.'; errEl.style.display=''; return; }
+        if (!effDate) { errEl.textContent='Effective date required.'; errEl.style.display=''; return; }
+        if (newStep < 1 || newStep > 8 || isNaN(newStep)) { errEl.textContent='Step must be 1–8.'; errEl.style.display=''; return; }
+        errEl.style.display = 'none';
+        const tSnap = await get(ref(db, `users/${id}`));
+        const t = tSnap.val();
+        const adminSnap = await get(ref(db, `users/${adminId}`));
+        await set(push(ref(db, `positionHistory/${id}`)), { fromDesignation: t.designation||'', toDesignation: newDesig, fromStep: t.step||1, toStep: newStep, fromPositionStartDate: t.positionStartDate||t.appointmentDate||'', effectiveDate: effDate, remarks, promotedBy: adminSnap.val().name, timestamp: new Date().toISOString() });
+        await update(ref(db, `users/${id}`), { designation: newDesig, step: newStep, positionStartDate: effDate, positionStartStep: newStep });
+        await set(push(ref(db, `leaveHistory/${id}`)), { date: effDate+'T00:00:00.000Z', reason:`Promoted from ${t.designation||'N/A'} (Step ${t.step||1}) to ${newDesig} (Step ${newStep})`, change:0, newBalance: t.leaveCredits||0, modifiedBy: adminSnap.val().name, type:'promotion', fromDesig: t.designation||'', toDesig: newDesig });
+        await set(push(ref(db, `notifications/${id}`)), { message:`You have been promoted to ${newDesig} (Step ${newStep}) effective ${effDate}.`, timestamp: new Date().toISOString() });
+        closeModal('promote-teacher-modal'); showAlert('Promotion recorded.');
+    });
+
+    document.getElementById('save-announce-btn').addEventListener('click', async () => {
+        const title = document.getElementById('announce-title').value.trim(), body = document.getElementById('announce-body').value.trim();
+        if (!title || !body) { showAlert('Title and message required.'); return; }
+        const adminSnap = await get(ref(db, `users/${adminId}`));
+        const { schoolId: sid, name: aName } = adminSnap.val();
+        await set(push(ref(db, `announcements/${sid}`)), { title, body, author: aName, timestamp: new Date().toISOString() });
+        closeModal('announce-modal'); showAlert('Announcement posted.');
+    });
+
+    document.getElementById('ao-report-individual-btn').addEventListener('click', async () => {
+        const aSnap = await get(ref(db, `users/${adminId}`)), { schoolId: sid } = aSnap.val();
+        const snap = await get(ref(db,'users')); const sel = document.getElementById('individual-report-select');
+        const opts = []; snap.forEach(c => { const u=c.val(); if(u.schoolId===sid&&u.role==='teacher') opts.push({id:c.key,name:u.name}); });
+        opts.sort((a,b)=>a.name.localeCompare(b.name));
+        sel.innerHTML = '<option disabled selected value="">— Select —</option>';
+        opts.forEach(o => { const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.name; sel.appendChild(opt); });
+        openModal('individual-report-modal');
+    });
+
+    document.getElementById('ao-report-all-btn').addEventListener('click', async () => {
+        showPdfOverlay();
+        const aSnap = await get(ref(db, `users/${adminId}`)), { schoolId:sid, schoolName:sn } = aSnap.val();
+        const snap = await get(ref(db,'users')); const teachers = [];
+        snap.forEach(c => { const u=c.val(); if(u.schoolId===sid&&u.role==='teacher') teachers.push({id:c.key,...u}); });
+        teachers.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+        genAllTeachersPDF(teachers, sn, `School_Report_${(sn||'').replace(/\s/g,'_')}.pdf`);
+        hidePdfOverlay();
+    });
+
+    document.getElementById('ao-report-deduction-btn').addEventListener('click', () => openModal('deduction-report-modal'));
+
+    document.getElementById('generate-individual-report-btn').addEventListener('click', async () => {
+        const id = document.getElementById('individual-report-select').value;
+        if (!id) { showAlert('Select a teacher.'); return; }
+        closeModal('individual-report-modal');
+        showPdfOverlay();
+        const tSnap = await get(ref(db, `users/${id}`)), td = { id: tSnap.key, ...tSnap.val() };
+        const hSnap = await get(ref(db, `leaveHistory/${id}`)); const hist = [];
+        hSnap.forEach(c => hist.push(c.val()));
+        genIndividualPDF([td], [hist], td.schoolName, `Leave_${td.name?.replace(/\s/g,'_')}.pdf`);
+        hidePdfOverlay();
+    });
+
+    
+        document.getElementById('generate-deduction-report-btn').addEventListener('click', async () => {
+        const start = document.getElementById('report-start-date').value, end = document.getElementById('report-end-date').value;
+        const types = Array.from(document.getElementById('report-deduction-types').selectedOptions).map(o=>o.value);
+        if (!start||!end||!types.length) { showAlert('Select dates and type(s).'); return; }
+        closeModal('deduction-report-modal');
+        showPdfOverlay();
+        const aSnap = await get(ref(db, `users/${adminId}`)), { schoolId:sid, schoolName:sn } = aSnap.val();
+        const uSnap = await get(ref(db,'users')); const tIds = {};
+        uSnap.forEach(c => { const u=c.val(); if(u.schoolId===sid&&u.role==='teacher') tIds[c.key]=u.name; });
+        let all = [];
+        for (const tid in tIds) { const hSnap = await get(ref(db, `leaveHistory/${tid}`)); hSnap.forEach(c => { const e=c.val(); if(e.change<0&&e.deductionType){ e.teacherName=tIds[tid]; all.push(e); } }); }
+        const s = new Date(start), ef = new Date(end); ef.setHours(23,59,59,999);
+        const filtered = all.filter(e => { const d=new Date(e.date); return d>=s&&d<=ef&&types.includes(e.deductionType); });
+        genDeductionPDF(filtered, sn, start, end, types, `Deduction_${(sn||'').replace(/\s/g,'_')}.pdf`);
+        hidePdfOverlay();
+    });
+
+}
+
+function listenAONotifs(adminId) {
+    const unsub = onChildAdded(ref(db, `adminNotifications/${adminId}`), snap => {
+        if (displayedNotifications.has(snap.key)) return;
+        const n = snap.val(), cutoff = Date.now() - 15*86400000;
+        if (n?.timestamp && new Date(n.timestamp).getTime() >= cutoff) { displayedNotifications.add(snap.key); showToast(n.message); remove(snap.ref); }
+    });
+    activeListeners.aoNotifs = { unsubscribe: unsub };
+}
+
+window.openAOAccountModal = async (adminId) => {
+    openModal('ao-account-modal');
+    loadAOHistory(adminId);
+};
+
+window.openAOCreditModal = (action) => {
+    document.getElementById('ao-credit-action').value = action;
+    document.getElementById('ao-credit-modal-title').textContent = action === 'add' ? 'Add Leave Credits' : 'Deduct Leave Credits';
+    document.getElementById('ao-credit-amount').value = '';
+    document.getElementById('ao-credit-reason').value = '';
+    document.getElementById('ao-deduction-type').value = '';
+    document.getElementById('ao-credit-error').style.display = 'none';
+    document.getElementById('ao-deduction-type-wrap').style.display = action === 'deduct' ? '' : 'none';
+    openModal('ao-credit-modal');
+};
+
+function loadAOHistory(adminId) {
+    const el = document.getElementById('ao-own-history');
+    if (!el) return;
+    get(ref(db, `leaveHistory/${adminId}`)).then(snap => {
+        el.innerHTML = '';
+        const entries = [];
+        snap.forEach(c => entries.push({ id: c.key, ...c.val() }));
+        if (!entries.length) { el.innerHTML = '<p class="empty-state">No credit history yet.</p>'; return; }
+        entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(e => el.appendChild(createHistEntry(e, adminId, 'ao')));
+    });
+}
+
+function updateTransferCount(schoolId) {
+    const unsub = onValue(ref(db,'transfers'), snap => {
+        let count = 0; snap.forEach(c => { const t=c.val(); if(t.toSchool===schoolId&&t.status==='pending') count++; });
+        document.getElementById('transfer-count').textContent = count;
+    });
+    activeListeners.xferCount = { unsubscribe: unsub };
+}
+
+
+function loadTransfers(schoolId) {
+    const inEl = document.getElementById('transfer-requests-list'), outEl = document.getElementById('outgoing-transfers-list');
+    const unsub = onValue(ref(db,'transfers'), async snap => {
+        inEl.innerHTML = ''; outEl.innerHTML = '';
+        const incoming = [], outgoing = [];
+        snap.forEach(c => { const t=c.val(); if(t.toSchool===schoolId&&t.status==='pending') incoming.push({id:c.key,...t}); if(t.fromSchool===schoolId&&t.status==='pending') outgoing.push({id:c.key,...t}); });
+        if (!incoming.length) inEl.innerHTML = '<p class="empty-state" style="padding:8px;">No incoming requests.</p>';
+        else { await fetchUsers(incoming.map(t=>t.teacherId)); incoming.forEach(t => { const d=document.createElement('div'); d.className='transfer-row'; d.innerHTML=`<span style="font-size:13px;color:var(--t2);">Request for <strong style="color:var(--t1);">${userCache[t.teacherId]?.name||'Unknown'}</strong></span><button onclick="acceptTransfer('${t.id}','${t.teacherId}','${schoolId}')" class="btn btn-success btn-sm">Accept</button>`; inEl.appendChild(d); }); }
+        if (!outgoing.length) outEl.innerHTML = '<p class="empty-state" style="padding:8px;">No outgoing requests.</p>';
+        else { await fetchUsers(outgoing.map(t=>t.teacherId)); outgoing.forEach(t => { const d=document.createElement('div'); d.className='transfer-row'; d.innerHTML=`<span style="font-size:13px;color:var(--t2);"><strong style="color:var(--t1);">${userCache[t.teacherId]?.name||'Unknown'}</strong> — Pending</span><button onclick="cancelTransfer('${t.id}')" class="btn btn-danger btn-sm">Cancel</button>`; outEl.appendChild(d); }); }
+    });
+    activeListeners.transfers = { unsubscribe: unsub };
+}
+
+async function fetchUsers(ids) {
+    await Promise.all(ids.map(async id => { if (!userCache[id]) { const s=await get(ref(db,`users/${id}`)); if(s.exists()) userCache[id]=s.val(); } }));
+}
+
+window.acceptTransfer = async (id, teacherId, newSchoolId) => {
+    const snap = await get(ref(db, `schools/${newSchoolId}`)); if (!snap.exists()) return;
+    await update(ref(db, `users/${teacherId}`), { schoolId: newSchoolId, schoolName: snap.val().name });
+    await remove(ref(db, `transfers/${id}`));
+    await set(push(ref(db, `notifications/${teacherId}`)), { message:`Your transfer to ${snap.val().name} has been accepted.`, timestamp: new Date().toISOString() });
+    showAlert('Transfer accepted.');
+};
+window.cancelTransfer = async id => { await remove(ref(db, `transfers/${id}`)); showAlert('Transfer cancelled.'); };
+
+function loadTeacherList(schoolId) {
+    const listEl = document.getElementById('teacher-list'), searchEl = document.getElementById('teacher-search');
+    let allUsers = {}, allTransfers = {}, searchTerm = '';
+    const render = () => {
+        const teachers = Object.values(allUsers).filter(u => u.role==='teacher' && u.schoolId===schoolId);
+        const active = teachers.filter(t => t.active !== false);
+        document.getElementById('active-teacher-count').textContent = active.length;
+        const pendingSet = new Set(Object.values(allTransfers).filter(t=>t.status==='pending').map(t=>t.teacherId));
+        let display = teachers.filter(t => !pendingSet.has(t.id));
+        if (searchTerm) display = display.filter(t => (t.name||'').toLowerCase().includes(searchTerm)||(t.email||'').toLowerCase().includes(searchTerm));
+        display.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+        listEl.innerHTML = '';
+        if (!display.length) { listEl.innerHTML = '<p class="empty-state">No teachers found.</p>'; return; }
+        display.forEach(t => {
+            const d = document.createElement('div'); d.className = 'teacher-row';
+            const step = computeStep(t.positionStartDate || t.appointmentDate, t.positionStartStep || 1);
+            const isMaxed = step >= 8;
+            const nextStepDate = !isMaxed ? stepEarnedDate(t.positionStartDate || t.appointmentDate, t.positionStartStep || 1, step + 1) : null;
+            const nextStepStr = nextStepDate ? `Step ${step+1} on ${nextStepDate.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}` : '';
+            const dots = Array.from({length:8}, (_,i) => `<div class="step-dot${i<step?' filled'+(isMaxed?' maxed':''):''}"></div>`).join('');
+            if (step !== (t.step || 1)) syncStepIfChanged(t.id, t);
+            d.innerHTML = `
+            <div class="teacher-info" onclick="showTeacherHistoryModal('${t.id}','${(t.name||'').replace(/'/g,"\\'")}')">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span class="teacher-name">${t.name||'Unnamed'}</span>
+            <span id="msg-ind-${t.id}"></span>
+            ${t.active===false?'<span class="bdg bdg-red">Suspended</span>':''}
+            </div>
+            <div class="teacher-email">${t.email}</div>
+            <div class="teacher-desig">${t.designation||''}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+            <div class="step-dots">${dots}</div>
+            <span class="bdg ${isMaxed?'bdg-pur':'bdg-blu'}" style="font-size:10px;">Step ${step}/8${isMaxed?' · MAX':''}</span>
+            ${nextStepStr?`<span style="font-size:10px;color:var(--t3);">→ ${nextStepStr}</span>`:''}
+            </div>
+            </div>
+            <div class="teacher-credits">${t.leaveCredits||0}</div>
+            <div class="divider-v"></div>
+            <div class="teacher-actions">
+            <button onclick="openEditTeacherModal('${t.id}')" class="ib ib-edit" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onclick="openManageCreditsModal('${t.id}','add')" class="ib ib-add" title="Add Credits"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button onclick="openManageCreditsModal('${t.id}','deduct')" class="ib ib-deduct" title="Deduct Credits"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button onclick="openPromoteModal('${t.id}',${step})" class="ib ib-promo" title="Promote"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></button>
+            <button onclick="viewPositionHistory('${t.id}')" class="ib ib-view" title="Position History"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button onclick="openTransferTeacherModal('${t.id}')" class="ib ib-transfer" title="Transfer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
+            <button onclick="openDeleteConfirm('${t.id}')" class="ib ib-del" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+            <label class="toggle-wrap" title="${t.active===false?'Activate':'Suspend'}"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleTeacherStatus('${t.id}')"><span class="toggle-track"></span></label>
+            </div>`;
+            listEl.appendChild(d);
+        });
+        listenUnreadMsgs(schoolId, display);
+    };
+    searchEl.oninput = e => { searchTerm = e.target.value.toLowerCase(); render(); };
+    const u1 = onValue(ref(db,'users'), snap => { allUsers={}; snap.forEach(c=>{allUsers[c.key]={id:c.key,...c.val()};}); render(); });
+    const u2 = onValue(ref(db,'transfers'), snap => { allTransfers={}; snap.forEach(c=>{allTransfers[c.key]={id:c.key,...c.val()};}); render(); });
+    activeListeners.tListU = { unsubscribe: u1 }; activeListeners.tListT = { unsubscribe: u2 };
+}
+
+function listenUnreadMsgs(schoolId, teachers) {
+    if (activeListeners.unread) activeListeners.unread.unsubscribe();
+    const unsub = onValue(ref(db,'queries'), snap => {
+        const unread = new Set(); let count = 0;
+        const convEl = document.getElementById('ao-conv-list');
+        if (convEl) convEl.innerHTML = '';
+        snap.forEach(c => {
+            const q=c.val();
+            if(q.schoolId===schoolId) {
+                if(new Date(q.lastUpdate||0)>new Date(q.adminLastRead||0)&&q.lastReplyBy==='teacher'){unread.add(q.teacherId);count++;}
+                if (convEl) {
+                    const d=document.createElement('div'); d.style.cssText='padding:10px 12px;border:1px solid var(--bdr);border-radius:var(--rsm);margin-bottom:6px;cursor:pointer;background:var(--surf2);display:flex;align-items:center;justify-content:space-between;';
+                    d.innerHTML=`<span style="font-size:13px;font-weight:600;">${userCache[q.teacherId]?.name||q.teacherName||'Teacher'}</span>${unread.has(q.teacherId)?'<span class="msg-dot"></span>':''}`;
+                    d.onclick=()=>window.openConversation?.(c.key,q.teacherName||'Teacher');
+                    convEl.appendChild(d);
+                }
+            }
+        });
+        const ucEl = document.getElementById('ao-unread-count');
+        if (ucEl) ucEl.textContent = count;
+        teachers.forEach(t => { const el=document.getElementById(`msg-ind-${t.id}`); if(el) el.innerHTML=unread.has(t.id)?'<span class="msg-dot"></span>':''; });
+    });
+    activeListeners.unread = { unsubscribe: unsub };
+}
+
+window.openDeleteConfirm = id => {
+    document.getElementById('confirm-title').textContent = 'Delete User';
+    document.getElementById('confirm-message').textContent = 'This will permanently delete the user account and all related data.';
+    const btn = document.getElementById('confirm-action-btn'), nb = btn.cloneNode(true); btn.parentNode.replaceChild(nb, btn);
+    nb.addEventListener('click', async () => { await remove(ref(db,`users/${id}`)); closeModal('confirm-modal'); showAlert('User deleted.'); });
+    openModal('confirm-modal');
+};
+window.openEditTeacherModal = async id => {
+    const snap = await get(ref(db,`users/${id}`)); if(!snap.exists()) return;
+    const t = snap.val();
+    document.getElementById('edit-teacher-id').value = id;
+    document.getElementById('edit-teacher-name').value = t.name||'';
+    document.getElementById('edit-teacher-email-display').value = t.email||'';
+    document.getElementById('edit-teacher-designation').value = t.designation||'';
+    document.getElementById('edit-teacher-appointment-date').value = t.appointmentDate||'';
+    openModal('edit-teacher-modal');
+};
+window.toggleTeacherStatus = async id => { const s=await get(ref(db,`users/${id}`)); if(s.exists()) await update(ref(db,`users/${id}`),{active:s.val().active===false}); };
+window.openManageCreditsModal = (id, action) => {
+    document.getElementById('manage-credits-teacher-id').value = id;
+    document.getElementById('manage-credits-action').value = action;
+    document.getElementById('credit-amount').value = '';
+    document.getElementById('credit-reason').value = '';
+    document.getElementById('deduction-type').value = '';
+    document.getElementById('manage-credits-error').style.display = 'none';
+    document.getElementById('manage-credits-title').textContent = action==='add'?'Add Leave Credits':'Deduct Leave Credits';
+    document.getElementById('deduction-type-wrap').style.display = action==='deduct'?'':'none';
+    openModal('manage-credits-modal');
+};
+function computeStep(positionStartDate, positionStartStep) {
+    const startStep = parseInt(positionStartStep) || 1;
+    if (!positionStartDate) return startStep;
+    const start = new Date(positionStartDate);
+    if (isNaN(start.getTime())) return startStep;
+    const now = new Date();
+    const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
+    const yearsElapsed = Math.floor((now - start) / msPerYear);
+    return Math.min(8, startStep + Math.floor(yearsElapsed / 3));
+}
+
+function stepEarnedDate(positionStartDate, positionStartStep, targetStep) {
+    const startStep = parseInt(positionStartStep) || 1;
+    if (targetStep <= startStep || !positionStartDate) return null;
+    const start = new Date(positionStartDate);
+    if (isNaN(start.getTime())) return null;
+    const yearsNeeded = (targetStep - startStep) * 3;
+    const earned = new Date(start);
+    earned.setFullYear(earned.getFullYear() + yearsNeeded);
+    return earned;
+}
+
+async function syncStepIfChanged(id, userData) {
+    const computed = computeStep(userData.positionStartDate || userData.appointmentDate, userData.positionStartStep || 1);
+    const stored = userData.step || 1;
+    if (computed !== stored) {
+        const prevStep = stored;
+        await update(ref(db, `users/${id}`), { step: computed });
+        if (computed > prevStep) {
+            const adminMsg = `Step auto-updated to Step ${computed} based on years of service.`;
+            await set(push(ref(db, `notifications/${id}`)), { message: adminMsg, timestamp: new Date().toISOString() });
+            for (let s = prevStep + 1; s <= computed; s++) {
+                const earnedDate = stepEarnedDate(userData.positionStartDate || userData.appointmentDate, userData.positionStartStep || 1, s);
+                await set(push(ref(db, `leaveHistory/${id}`)), { date: earnedDate ? earnedDate.toISOString() : new Date().toISOString(), reason: `Step ${s-1} → Step ${s} (annual increment — ${earnedDate ? earnedDate.getFullYear() : 'N/A'})`, change: 0, newBalance: userData.leaveCredits || 0, modifiedBy: 'System (Auto)', type: 'step' });
+            }
+        }
+    }
+    return computed;
+}
+window.openPromoteModal = async (id, step) => {
+    document.getElementById('promote-teacher-id').value = id;
+    const snap = await get(ref(db, `users/${id}`));
+    const desig = snap.exists() ? (snap.val().designation || 'N/A') : 'N/A';
+    document.getElementById('promote-current-info').textContent = `${desig} — Step ${step}/8`;
+    document.getElementById('promote-new-designation').value = '';
+    document.getElementById('promote-new-step').value = 1;
+    document.getElementById('promote-effective-date').value = '';
+    document.getElementById('promote-remarks').value = '';
+    document.getElementById('promote-error').style.display = 'none';
+    openModal('promote-teacher-modal');
+};
+
+window.viewPositionHistory = async (id) => {
+    const tSnap = await get(ref(db, `users/${id}`));
+    const name = tSnap.exists() ? (tSnap.val().name || 'Teacher') : 'Teacher';
+    document.getElementById('pos-hist-modal-title').textContent = `Position History — ${name}`;
+    const content = document.getElementById('position-history-content');
+    content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">Loading…</div>';
+    openModal('position-history-modal');
+    const snap = await get(ref(db, `positionHistory/${id}`));
+    const t = tSnap.val();
+    content.innerHTML = '';
+    const currentStep = computeStep(t.positionStartDate || t.appointmentDate, t.positionStartStep || 1);
+    const isMaxed = currentStep >= 8;
+    const current = document.createElement('div'); current.className = 'pos-hist-entry';
+    const nextDate = !isMaxed ? stepEarnedDate(t.positionStartDate || t.appointmentDate, t.positionStartStep || 1, currentStep + 1) : null;
+    current.innerHTML = `<div class="pos-hist-title">Current Position</div>
+    <div class="pos-hist-sub"><strong>${t.designation||'N/A'}</strong> · Step ${currentStep}/8${isMaxed?' <span style="color:var(--pur);font-weight:600;">MAX</span>':''}</div>
+    <div style="font-size:11.5px;color:var(--t2);margin-top:4px;">Position since: <strong>${t.positionStartDate || t.appointmentDate || 'N/A'}</strong> · Starting step: <strong>${t.positionStartStep || 1}</strong></div>
+    ${nextDate?`<div style="font-size:11px;color:var(--grn);margin-top:3px;">▲ Step ${currentStep+1} earned on ${nextDate.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'})}</div>`:''}
+    ${isMaxed?'<div style="font-size:11px;color:var(--pur);margin-top:3px;">Maximum step reached. Promotion required to advance further.</div>':''}`;
+    content.appendChild(current);
+    if (!snap.exists()) { const empty=document.createElement('p'); empty.className='empty-state'; empty.textContent='No promotion history.'; content.appendChild(empty); return; }
+    const items = []; snap.forEach(c => items.push({id:c.key,...c.val()}));
+    items.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)).forEach(p => {
+        const d = document.createElement('div'); d.className = 'pos-hist-entry';
+        d.innerHTML = `<div class="pos-hist-title">Promoted: ${p.fromDesignation} → ${p.toDesignation}</div>
+        <div class="pos-hist-sub">Step ${p.fromStep} → Step ${p.toStep} (new position) · Effective: ${p.effectiveDate}</div>
+        <div style="font-size:11.5px;color:var(--t2);margin-top:3px;">Previous position started: ${p.fromPositionStartDate||'N/A'} · Promoted by: ${p.promotedBy||'N/A'}</div>
+        ${p.remarks?`<div style="font-size:11px;color:var(--t3);margin-top:4px;font-style:italic;">"${p.remarks}"</div>`:''}`;
+        content.appendChild(d);
+    });
+};
+window.openTransferTeacherModal = async id => {
+    document.getElementById('transfer-teacher-id').value = id;
+    const sel = document.getElementById('transfer-school-select');
+    const adminSnap = await get(ref(db,`users/${auth.currentUser.uid}`)), curSchool = adminSnap.val().schoolId;
+    if (!schoolCache) { const snap=await get(ref(db,'schools')); schoolCache={}; snap.forEach(c=>{schoolCache[c.key]=c.val();}); }
+    sel.innerHTML = '<option disabled selected value="">— Select School —</option>';
+    Object.entries(schoolCache).forEach(([sid,s])=>{ if(sid!==curSchool){const o=document.createElement('option');o.value=sid;o.textContent=`${s.name} (${s.district})`;sel.appendChild(o);} });
+    openModal('transfer-teacher-modal');
+};
+
+function loadTeacherConvList(uid, schoolId) {
+    const el = document.getElementById('teacher-conv-list');
+    if (!el) return;
+    const unsub = onValue(ref(db,'queries'), snap => {
+        el.innerHTML = '';
+        let hasConv = false;
+        snap.forEach(c => {
+            const q = c.val();
+            if (q.teacherId !== uid) return;
+            hasConv = true;
+            const unread = new Date(q.lastUpdate||0) > new Date(q.teacherLastRead||0) && q.lastReplyBy !== 'teacher';
+            const d = document.createElement('div');
+            d.style.cssText = 'padding:8px 10px;border:1px solid var(--bdr);border-radius:var(--rsm);margin-bottom:6px;cursor:pointer;background:var(--surf2);display:flex;justify-content:space-between;align-items:center;font-size:12.5px;';
+            d.innerHTML = `<span>Message your AO</span>${unread?'<span class="msg-dot"></span>':''}`;
+            d.onclick = () => window.openConversation?.(c.key, 'Admin');
+            el.appendChild(d);
+        });
+        if (!hasConv) {
+            const d = document.createElement('div');
+            d.style.cssText = 'padding:8px 10px;border:1px solid var(--bdr);border-radius:var(--rsm);cursor:pointer;background:var(--acc-bg);border-color:var(--acc-bdr);font-size:12.5px;color:var(--acc);font-weight:600;text-align:center;';
+            d.textContent = 'Start a conversation';
+            d.onclick = () => window.startConversation?.(uid, schoolId);
+            el.appendChild(d);
+        }
+    });
+    activeListeners.tConv = { unsubscribe: unsub };
+}
+
+function loadAnnouncements(schoolId, containerId) {
+    const el = document.getElementById(containerId);
+    const unsub = onValue(ref(db, `announcements/${schoolId}`), snap => {
+        el.innerHTML = '';
+        if (!snap.exists()) { el.innerHTML = '<p class="empty-state" style="padding:10px;">No announcements.</p>'; return; }
+        const items = []; snap.forEach(c => items.push({id:c.key,...c.val()}));
+        items.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)).slice(0,5).forEach(a => {
+            const d = document.createElement('div'); d.className = 'announce-card';
+            d.innerHTML = `<div class="announce-title">${a.title}</div><div class="announce-body">${a.body}</div><div class="announce-meta">${a.author} · ${a.timestamp?new Date(a.timestamp).toLocaleDateString():''}</div>`;
+            el.appendChild(d);
+        });
+    });
+    activeListeners['ann-'+containerId] = { unsubscribe: unsub };
+}
+
+function loadTeacher(uid, ud) {
+    const name = ud.name || fmtEmail(ud.email);
+    document.getElementById('teacher-welcome-header').innerHTML = `Hello, <strong>${name}</strong>`;
+    document.getElementById('teacher-welcome-name').textContent = ud.name||'Teacher';
+    document.getElementById('teacher-school-name').textContent = ud.schoolName||'';
+    document.getElementById('teacher-designation-display').textContent = ud.designation||'';
+
+    const detEl = document.getElementById('teacher-details');
+    detEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>${ud.designation||'N/A'}</div><div style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${ud.appointmentDate||'N/A'}</div>`;
+
+    const userUnsub = onValue(ref(db,`users/${uid}`), snap => {
+        if (!snap.exists()) return;
+        const u = snap.val();
+        document.getElementById('teacher-leave-credits').textContent = u.leaveCredits||0;
+        const step = computeStep(u.positionStartDate || u.appointmentDate, u.positionStartStep || 1);
+        const isMaxed = step >= 8;
+        const dotsEl = document.getElementById('teacher-step-dots');
+        dotsEl.innerHTML = Array.from({length:8}, (_,i) => `<div class="step-dot${i<step?' filled'+(isMaxed?' maxed':''):''}"></div>`).join('');
+        const existingSb = dotsEl.parentElement.querySelector('.bdg');
+        if (existingSb) existingSb.remove();
+        const existingNext = dotsEl.parentElement.querySelector('.step-next-label');
+        if (existingNext) existingNext.remove();
+        const sb = document.createElement('span');
+        sb.className = `bdg ${isMaxed?'bdg-pur':'bdg-blu'}`; sb.style.fontSize='10px';
+        sb.textContent = `Step ${step}/8${isMaxed?' · MAX':''}`; dotsEl.after(sb);
+        if (!isMaxed) {
+            const nextDate = stepEarnedDate(u.positionStartDate || u.appointmentDate, u.positionStartStep || 1, step + 1);
+            if (nextDate) {
+                const nl = document.createElement('span');
+                nl.className = 'step-next-label';
+                nl.style.cssText = 'font-size:10.5px;color:var(--t3);display:block;margin-top:4px;';
+                nl.textContent = `Step ${step+1} on ${nextDate.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'})}`;
+                sb.after(nl);
+            }
+        }
+    });
+    activeListeners.tUser = { unsubscribe: userUnsub };
+
+    const histEl = document.getElementById('leave-history');
+    const histUnsub = onValue(ref(db,`leaveHistory/${uid}`), snap => {
+        histEl.innerHTML = '';
+        const entries = []; snap.forEach(c => entries.push({id:c.key,...c.val()}));
+        if (!entries.length) { histEl.innerHTML = '<p class="empty-state">No credit history yet.</p>'; return; }
+        entries.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(e => histEl.appendChild(createHistEntry(e, uid, 'teacher')));
+    });
+    activeListeners.tHist = { unsubscribe: histUnsub };
+
+    const notifUnsub = onChildAdded(ref(db,`notifications/${uid}`), snap => {
+        if (displayedNotifications.has(snap.key)) return;
+        const n = snap.val(), cutoff = Date.now()-15*86400000;
+        if (n?.timestamp && new Date(n.timestamp).getTime()>=cutoff) { displayedNotifications.add(snap.key); showToast(n.message); remove(snap.ref); }
+    });
+    activeListeners.tNotif = { unsubscribe: notifUnsub };
+
+    if (ud.schoolId) loadAnnouncements(ud.schoolId, 'teacher-announcements-list');
+
+    loadTeacherConvList(uid, ud.schoolId);
+
+    const avatarEl = document.getElementById('teacher-avatar');
+    if (avatarEl) avatarEl.onclick = openProfilePicModal;
+
+
+    }
+
+
+function createHistEntry(entry, teacherId, role) {
+    const el = document.createElement('div'); el.className = 'hist-entry';
+    const date = entry.date ? new Date(entry.date).toLocaleString() : 'N/A';
+    const isPromo = entry.type === 'promotion', isStep = entry.type === 'step';
+    const isPos = entry.change > 0, isZero = entry.change === 0 && !isPromo && !isStep;
+    let changeHtml = '';
+    if (isPromo) changeHtml = `<div class="bdg bdg-pur" style="align-self:flex-start;">Promotion</div>`;
+    else if (isStep) changeHtml = `<div class="bdg bdg-blu" style="align-self:flex-start;">Step</div>`;
+    else if (isZero) changeHtml = `<span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:16px;color:var(--t3);">±0</span>`;
+    else { changeHtml = `<span class="${isPos?'hist-pos':'hist-neg'}">${isPos?'+':''}${entry.change}</span><div style="font-size:11px;color:var(--t3);">Bal: ${entry.newBalance}</div>`; }
+
+    el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div style="flex:1;min-width:0;">
+    <div style="font-weight:600;font-size:13px;color:var(--t1);margin-bottom:4px;">${entry.reason}</div>
+    <div style="font-size:11.5px;color:var(--t3);">${date}</div>
+    ${entry.deductionType?`<span class="bdg bdg-red" style="margin-top:6px;font-size:10px;">${entry.deductionType}</span>`:''}
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+    <span style="font-size:11.5px;color:var(--t3);">By <strong style="color:var(--t2);">${entry.modifiedBy||'N/A'}</strong></span>
+    <div id="qw-${entry.id}" style="position:relative;display:inline-flex;align-items:center;"></div>
+    </div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${changeHtml}</div>
+    </div>`;
+
+    const qw = el.querySelector(`#qw-${entry.id}`);
+    const mb = document.createElement('button');
+    mb.className = 'ib ib-msg'; mb.style.cssText='width:26px;height:26px;'; mb.title = 'Conversation';
+    mb.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    mb.onclick = () => openConvModal(entry.id, teacherId);
+    qw.appendChild(mb);
+    const qUnsub = onValue(ref(db,`queries/${entry.id}`), snap => {
+        const q=snap.val(), badge=qw.querySelector('.msg-dot');
+        if(badge) badge.remove();
+        if(q?.lastUpdate&&q?.lastReplyBy){
+            const lu=new Date(q.lastUpdate).getTime(), lr=role==='teacher'?new Date(q.teacherLastRead||0).getTime():new Date(q.adminLastRead||0).getTime(), myRole=role==='teacher'?'teacher':'standard-admin';
+            if(lu>lr&&q.lastReplyBy!==myRole){ const b=document.createElement('span'); b.className='msg-dot'; b.style='position:absolute;top:-3px;right:-3px;'; qw.appendChild(b); }
+        }
+    });
+    activeListeners[`qe-${entry.id}`] = { unsubscribe: qUnsub };
+    return el;
+}
+
+async function openConvModal(histId, teacherId) {
+    const thread = document.getElementById('conversation-thread');
+    thread.innerHTML = '<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px;">Loading…</div>';
+    openModal('query-conversation-modal');
+    const me = auth.currentUser, meSnap = await get(ref(db,`users/${me.uid}`)), role = meSnap.val().role;
+    document.getElementById('conv-modal-title').textContent = 'Conversation';
+    const updateRead = () => { const upd = {}; if(role==='teacher') upd.teacherLastRead=new Date().toISOString(); else upd.adminLastRead=new Date().toISOString(); update(ref(db,`queries/${histId}`), upd).catch(()=>{}); };
+    updateRead();
+    if (activeListeners.convo) activeListeners.convo.unsubscribe();
+    const msgsUnsub = onValue(ref(db,`queries/${histId}/messages`), snap => {
+        thread.innerHTML = '';
+        if (!snap.exists()) { thread.innerHTML = '<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px;">No messages yet. Start the conversation.</div>'; return; }
+        const msgs = []; snap.forEach(c => msgs.push(c.val()));
+        msgs.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp)).forEach(msg => {
+            const isMine = msg.senderId===me.uid, d=document.createElement('div'); d.className='conv-msg';
+            d.innerHTML = `<div style="align-self:${isMine?'flex-end':'flex-start'};"><div class="conv-bubble ${isMine?'mine':'theirs'}">${msg.message}</div></div><p class="conv-meta ${isMine?'mine':''}">${msg.senderName} · ${msg.timestamp?new Date(msg.timestamp).toLocaleTimeString():''}</p>`;
+            thread.appendChild(d);
+        });
+        thread.scrollTop = thread.scrollHeight;
+    });
+    activeListeners.convo = { unsubscribe: msgsUnsub };
+    const sendBtn = document.getElementById('conversation-send-btn'), nb = sendBtn.cloneNode(true); sendBtn.parentNode.replaceChild(nb, sendBtn);
+    const inp = document.getElementById('conversation-reply-message');
+    const send = async () => {
+        const msg = inp.value.trim(); if(!msg) return;
+        const qRef = ref(db,`queries/${histId}`), qSnap = await get(qRef);
+        if (!qSnap.exists()) {
+            const tSnap = await get(ref(db,`users/${teacherId}`));
+            const init = role==='teacher'?{teacherLastRead:new Date().toISOString()}:{adminLastRead:new Date().toISOString()};
+            await set(qRef, {status:'open',teacherId,schoolId:tSnap.val().schoolId,lastUpdate:new Date().toISOString(),...init});
+        }
+        await set(push(ref(db,`queries/${histId}/messages`)), { senderId:me.uid, senderName:meSnap.val().name, message:msg, timestamp:new Date().toISOString() });
+        const upd = {lastUpdate:new Date().toISOString(),lastReplyBy:role};
+        if(role==='teacher') upd.teacherLastRead=new Date().toISOString(); else upd.adminLastRead=new Date().toISOString();
+        await update(qRef, upd);
+        if(role==='teacher') {
+            const tSnap=await get(ref(db,`users/${teacherId}`)); const sid=tSnap.val().schoolId;
+            const uSnap=await get(ref(db,'users'));
+            uSnap.forEach(c=>{const u=c.val();if(u.role==='standard-admin'&&u.schoolId===sid) set(push(ref(db,`adminNotifications/${c.key}`)),{message:`New message from ${meSnap.val().name}`,timestamp:new Date().toISOString()});});
+        }
+        inp.value='';
+    };
+    nb.addEventListener('click', send);
+    inp.onkeydown = e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} };
+}
+
+window.showTeacherHistoryModal = async (id, name) => {
+    document.getElementById('teacher-history-title').textContent = `History — ${name}`;
+    const content = document.getElementById('teacher-history-content');
+    content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">Loading…</div>';
+    const snap = await get(ref(db,`leaveHistory/${id}`));
+    const entries = []; snap.forEach(c => entries.push({id:c.key,...c.val()}));
+    content.innerHTML = '';
+    if (!entries.length) { content.innerHTML = '<p class="empty-state">No history found.</p>'; }
+    else { entries.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(e=>content.appendChild(createHistEntry(e,id,'standard-admin'))); }
+    openModal('teacher-history-modal');
+};
+
+function calcService(appt) {
+    if(!appt) return 'N/A'; const s=new Date(appt); if(isNaN(s)) return 'N/A';
+    const e=new Date(); let y=e.getFullYear()-s.getFullYear(),m=e.getMonth()-s.getMonth(),d=e.getDate()-s.getDate();
+    if(d<0){m--;d+=new Date(e.getFullYear(),e.getMonth(),0).getDate();} if(m<0){y--;m+=12;}
+    return `${y}y ${m}m ${d}d`;
+}
+
+function pdfHeader(doc, title, subtitle, schoolName, landscape) {
+    const pw = landscape?297:210, margin=14;
+    doc.setFillColor(26,21,16); doc.rect(0,0,pw,30,'F');
+    doc.setFillColor(217,83,28); doc.rect(0,30,pw,1.5,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('LeaveLedger',margin,10);
+    doc.setFontSize(13); doc.text(title,pw/2,14,{align:'center'});
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
+    doc.text(subtitle,pw/2,20,{align:'center'}); doc.text(schoolName||'',pw-margin,10,{align:'right'}); doc.text(new Date().toLocaleString(),pw-margin,16,{align:'right'});
+}
+
+function addFooters(doc, schoolName) {
+    const pages = doc.internal.getNumberOfPages(), pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+    for (let i=1;i<=pages;i++) {
+        doc.setPage(i); doc.setFillColor(26,21,16); doc.rect(0,ph-12,pw,12,'F');
+        doc.setFillColor(217,83,28); doc.rect(0,ph-13,pw,.5,'F');
+        doc.setTextColor(150,150,150); doc.setFontSize(7); doc.setFont('helvetica','normal');
+        doc.text('For official use only. Unauthorized disclosure is prohibited.',14,ph-5);
+        doc.text(`Page ${i} of ${pages}`,pw-14,ph-5,{align:'right'});
+    }
+}
+
+function genIndividualPDF(teachers, histories, schoolName, filename) {
+    const doc = new jsPDF();
+    pdfHeader(doc,'Individual Leave Report',`School: ${schoolName||'N/A'}`,schoolName,false);
+    let y = 38;
+    teachers.forEach((t,i) => {
+        const hist = histories[i]||[];
+        if(i>0){doc.addPage();y=38;}
+        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(26,21,16);
+        doc.text(t.name||'N/A',14,y); y+=6;
+        doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,79,68);
+        doc.text(`${t.email||''} · ${t.designation||''} · Service: ${calcService(t.appointmentDate)} · Step: ${t.step||1}/8`,14,y); y+=4;
+        doc.setFontSize(10); doc.text(`Leave Credits: ${t.leaveCredits||0}`,14,y); y+=4;
+        const rows = hist.map(e=>[new Date(e.date).toLocaleDateString(),e.reason,e.change>0?'+'+e.change:e.change,e.newBalance,e.modifiedBy||'']);
+        doc.autoTable({startY:y+2,head:[['Date','Reason','Change','Balance','Modified By']],body:rows,styles:{fontSize:8},headStyles:{fillColor:[217,83,28]},margin:{left:14,right:14}});
+        y = doc.lastAutoTable.finalY + 8;
+    });
+    addFooters(doc,schoolName); doc.save(filename);
+}
+
+function genAllTeachersPDF(teachers, schoolName, filename) {
+    const doc = new jsPDF();
+    pdfHeader(doc,'All Teachers Leave Report',`School: ${schoolName||'N/A'}`,schoolName,false);
+    const rows = teachers.map(t=>[t.name||'N/A',t.email,t.designation||'N/A',`Step ${t.step||1}/8`,t.leaveCredits||0,calcService(t.appointmentDate),t.active===false?'Suspended':'Active']);
+    doc.autoTable({startY:38,head:[['Name','Email','Designation','Step','Credits','Service','Status']],body:rows,styles:{fontSize:8},headStyles:{fillColor:[217,83,28]},margin:{left:14,right:14}});
+    addFooters(doc,schoolName); doc.save(filename);
+}
+
+function genDeductionPDF(data, schoolName, start, end, types, filename) {
+    const doc = new jsPDF({orientation:'landscape'});
+    pdfHeader(doc,'Deduction Summary Report',`${start} to ${end} | Types: ${types.join(', ')}`,schoolName,true);
+    const rows = data.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(e=>[e.teacherName,new Date(e.date).toLocaleDateString(),e.reason,e.deductionType,Math.abs(e.change),e.newBalance,e.modifiedBy||'']);
+    doc.autoTable({startY:38,head:[['Teacher','Date','Reason','Type','Days','Balance','Modified By']],body:rows,styles:{fontSize:8},headStyles:{fillColor:[217,83,28]},margin:{left:14,right:14}});
+    addFooters(doc,schoolName); doc.save(filename);
+}
+
+function showPdfOverlay() {
+    const o = document.getElementById('pdf-overlay'); o.classList.add('on');
+    const bar = document.getElementById('pdf-bar'); bar.style.animation='none'; bar.offsetHeight; bar.style.animation='progAnim 3s ease-in-out forwards';
+}
+function hidePdfOverlay() { document.getElementById('pdf-overlay').classList.remove('on'); }
+
+document.getElementById('feedback-button').addEventListener('click', () => { document.getElementById('feedback-message').value=''; openModal('feedback-modal'); });
+document.getElementById('submit-feedback-btn').addEventListener('click', async () => {
+    const msg = document.getElementById('feedback-message').value.trim();
+    if (!msg) { showAlert('Enter your feedback.'); return; }
+    const meSnap = await get(ref(db,`users/${auth.currentUser.uid}`));
+    await set(push(ref(db,'feedback')), { message:msg, from:meSnap.val().name||auth.currentUser.email, timestamp:new Date().toISOString() });
+    closeModal('feedback-modal'); showAlert('Feedback submitted. Thank you!');
+});
+
+window.openModal = id => { const m=document.getElementById(id); if(m){m.classList.add('open'); if(id==='query-conversation-modal')setTimeout(()=>{const t=document.getElementById('conversation-thread');if(t)t.scrollTop=t.scrollHeight;},100);} };
+window.closeModal = id => { const m=document.getElementById(id); if(m) m.classList.remove('open'); };
+
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+function showAlert(msg, title='Notice') {
+    document.getElementById('alert-title').textContent = title;
+    document.getElementById('alert-message').textContent = msg;
+    openModal('alert-modal');
+}
+function showToast(message) {
+    const c=document.getElementById('toast-container'), t=document.createElement('div'); t.className='toast';
+    t.innerHTML=`<div class="toast-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="toast-msg">${message}</span><div class="toast-bar"></div>`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(24px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); }, 8000);
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
